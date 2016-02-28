@@ -1,0 +1,8 @@
+prefix=/home/pses/catkin_ws/devel
+
+Name: sbpl
+Description: Description of sbpl
+Version: 0.0.0
+Cflags: -I/home/pses/catkin_ws/src/global_planner/sbpl/include
+Libs: -L/home/pses/catkin_ws/devel/lib -lsbpl
+Requires: 

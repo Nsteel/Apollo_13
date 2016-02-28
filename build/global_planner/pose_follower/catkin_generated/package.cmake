@@ -1,0 +1,7 @@
+set(_CATKIN_CURRENT_PACKAGE "pose_follower")
+set(pose_follower_MAINTAINER "Dave Hershberger <hersh@willowgarage.com>")
+set(pose_follower_DEPRECATED "")
+set(pose_follower_VERSION "0.1.11")
+set(pose_follower_BUILD_DEPENDS "nav_core" "base_local_planner" "costmap_2d" "roscpp" "tf" "nav_msgs" "pluginlib")
+set(pose_follower_RUN_DEPENDS "nav_core" "base_local_planner" "costmap_2d" "roscpp" "tf" "nav_msgs" "pluginlib")
+set(pose_follower_BUILDTOOL_DEPENDS "catkin")

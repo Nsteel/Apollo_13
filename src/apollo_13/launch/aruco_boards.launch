@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+	<!-- Identify ArUco markers using the rgb-camera of the Kinect -->
+	<node pkg="ar_sys" type="multi_boards" name="ar_multi_boards">
+		<remap from="/camera_info" to="/camera/rgb/camera_info" />
+		<remap from="/image" to="/camera/rgb/image_rect_color" />
+		<param name="image_is_rectified" type="bool" value="true"/>
+		<param name="boards_config" type="string" value="$(find apollo_13)/config/aruco_boards/boards.yml"/>
+		<param name="boards_directory" type="string" value="$(find apollo_13)/config/aruco_boards/"/>
+		<param name="draw_markers" type="bool" value="true" />
+		<param name="draw_markers_cube" type="bool" value="true" />
+		<param name="draw_markers_axis" type="bool" value="true" />
+		<param name="marker_size" type="double" value="0.18" />
+		<param name="camera_width" value="640" />
+		<param name="camera_height" value="480" />
+	</node>
+
+	<!-- Send needed transformation for the camera frame -->
+	<node pkg="tf" type="static_transform_publisher" name="camera_broadcaster" args="0 0 0 0 0 0 base_laser camera_link 10" />
+
+	<!-- Drive through ArUco gates -->
+	<node pkg="apollo_13" type="car_aruco" name="car_aruco" output="screen" />
+	
+</launch>
+
+

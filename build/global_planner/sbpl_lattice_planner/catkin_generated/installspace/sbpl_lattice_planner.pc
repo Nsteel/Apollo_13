@@ -1,0 +1,8 @@
+prefix=/home/pses/catkin_ws/install
+
+Name: sbpl_lattice_planner
+Description: Description of sbpl_lattice_planner
+Version: 0.1.11
+Cflags: -I/home/pses/catkin_ws/install/include
+Libs: -L/home/pses/catkin_ws/install/lib 
+Requires: message_runtime geometry_msgs

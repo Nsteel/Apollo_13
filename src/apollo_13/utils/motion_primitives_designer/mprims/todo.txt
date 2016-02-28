@@ -1,0 +1,14 @@
+1. when decreasing angular resolution: change the discrete angle to one of the two nearer angles
+2. place multiple primitives
+3. export to motion primitive format
+4. autogeneration of primitives for other discrete angles
+5. view turning radius parameters for given resolutions
+6. scrollable window
+7. fix bug with angles not updating when num_angles is changed
+8. make pluginable curve generators
+9. click and drag arrows instead of drawing the tangent line: left click for translation and right-click for rotation
+    - show a ghost arrow for where the arrow will snap to in discrete land in both orientation and position
+10. stop hardcoding the shape of the start and the goal and move the picking/collision detection out of widget
+11. marching squares selection visualization
+12. tetris like "next piece" window for goals
+

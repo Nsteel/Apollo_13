@@ -1,0 +1,26 @@
+(cl:in-package sbpl_lattice_planner-msg)
+(cl:export '(INITIAL_EPSILON-VAL
+          INITIAL_EPSILON
+          FINAL_EPSILON-VAL
+          FINAL_EPSILON
+          PLAN_TO_FIRST_SOLUTION-VAL
+          PLAN_TO_FIRST_SOLUTION
+          ALLOCATED_TIME-VAL
+          ALLOCATED_TIME
+          ACTUAL_TIME-VAL
+          ACTUAL_TIME
+          TIME_TO_FIRST_SOLUTION-VAL
+          TIME_TO_FIRST_SOLUTION
+          SOLUTION_COST-VAL
+          SOLUTION_COST
+          PATH_SIZE-VAL
+          PATH_SIZE
+          FINAL_NUMBER_OF_EXPANDS-VAL
+          FINAL_NUMBER_OF_EXPANDS
+          NUMBER_OF_EXPANDS_INITIAL_SOLUTION-VAL
+          NUMBER_OF_EXPANDS_INITIAL_SOLUTION
+          START-VAL
+          START
+          GOAL-VAL
+          GOAL
+))

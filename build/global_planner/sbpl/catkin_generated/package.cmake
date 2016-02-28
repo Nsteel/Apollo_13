@@ -1,0 +1,7 @@
+set(_CATKIN_CURRENT_PACKAGE "sbpl")
+set(sbpl_MAINTAINER "Michael Ferguson <mike@vanadiumlabs.com>")
+set(sbpl_DEPRECATED "")
+set(sbpl_VERSION "0.0.0")
+set(sbpl_BUILD_DEPENDS "roscpp")
+set(sbpl_RUN_DEPENDS "roscpp")
+set(sbpl_BUILDTOOL_DEPENDS "catkin")

@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<launch>
+  
+<master auto="start"/>
+  
+  	<!-- Bring up the Kinect -->
+	<include file="$(find freenect_launch)/launch/freenect.launch" />
+	
+	<!-- Set static tf transformation from the car to the Kinect -->  
+	<node pkg="tf" type="static_transform_publisher" name="base_laser_broadcaster" args="0.2 0 0.1 0 0 0 1 base_link base_laser 10" />
+	
+	<!-- Convert the kinect point cloud to a laserscan message -->  
+	<node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan">
+	    <remap from="image" to="/camera/depth/image_raw" />
+	    <param name="output_frame_id" value="base_laser" />
+	  </node>
+
+	<!-- Run the necessary nodes to bring up the car -->
+	<node pkg="apollo_13" type="apollo_13" name="apollo_13" output="screen"/>
+	<node pkg="car_handler" type="car_handler_node" name="car_handler"/>
+	<node pkg="car_handler" type="car_arduino" name="car_arduino" output="screen" />
+
+	<!-- Run RosOSC -->
+  	<include file="$(find apollo_13)/launch/interaction.launch" />
+
+  	<!-- Run the mapping -->
+  	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
+	    <param name="scan" value="scan" />
+	    <!-- param name="map_update_interval" value="2.0" / -->
+	    <!-- param name="maxUrange" value="6.0" / -->
+	    <!-- param name="lsigma" value="0.2" / -->
+	    <!-- param name="ogain" value="2.0" / -->
+	    <!-- param name="linearUpdate" value="0.05" / -->
+	    <!-- param name="angularUpdate" value="0.05" / -->
+    	    <!-- param name="particles" value="100" / -->
+  	</node>
+	
+	<!-- Show the Rviz visualization-->
+	<include file="$(find apollo_13)/launch/car_display.launch" />	
+
+</launch>

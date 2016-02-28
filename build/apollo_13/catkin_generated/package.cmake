@@ -1,0 +1,7 @@
+set(_CATKIN_CURRENT_PACKAGE "apollo_13")
+set(apollo_13_MAINTAINER "pses <pses@todo.todo>")
+set(apollo_13_DEPRECATED "")
+set(apollo_13_VERSION "0.0.0")
+set(apollo_13_BUILD_DEPENDS "ar_sys" "freenect" "geometry_msgs" "move_base" "nav_msgs" "roscpp" "rososc" "rospy" "sensor_msgs" "std_msgs" "tf" "custom_msgs")
+set(apollo_13_RUN_DEPENDS "ar_sys" "freenect" "geometry_msgs" "move_base" "nav_msgs" "roscpp" "rososc" "rospy" "sensor_msgs" "std_msgs" "tf" "custon_msgs")
+set(apollo_13_BUILDTOOL_DEPENDS "catkin")
