@@ -1,8 +1,10 @@
 /*
  * ForwardKinematics.cpp
  *
- *  Created on: 24.11.2015
- *      Author: Basti
+ *      Authors: Sebastian Ehmes
+ *				 Nicolas Acero
+ *				 Huynh-Tan Truong
+ *				 Li Zhao
  */
 
 #include <car_handler/ForwardKinematics.h>

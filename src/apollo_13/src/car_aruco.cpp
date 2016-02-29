@@ -1,3 +1,12 @@
+/*
+ * car_aruco.cpp
+ *
+ *      Authors: Sebastian Ehmes
+ *         Nicolas Acero
+ *         Huynh-Tan Truong
+ *         Li Zhao
+ */
+
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
 #include <visualization_msgs/Marker.h>

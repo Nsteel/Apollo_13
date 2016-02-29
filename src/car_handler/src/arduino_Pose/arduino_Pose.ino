@@ -1,5 +1,13 @@
 /*
- * Team Apollo 13
+ * arduino_Pose.ino
+ *
+ *      Authors: Sebastian Ehmes
+ *         Nicolas Acero
+ *         Huynh-Tan Truong
+ *         Li Zhao
+ *         
+ *      Co-Author: Jeff Rowberg   
+ */
  * Arduino Code to read, calculate and send position and orientation
 */
 #include <Wire.h>

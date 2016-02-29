@@ -1,3 +1,12 @@
+/*
+ * apollo_13.cpp
+ *
+ *      Authors: Sebastian Ehmes
+ *         Nicolas Acero
+ *         Huynh-Tan Truong
+ *         Li Zhao
+ */
+
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
 #include <apollo_13/ScalableControl.h>

@@ -1,3 +1,14 @@
+/*
+ * car_handler.cpp
+ *
+ *      Authors: Sebastian Ehmes
+ *               Nicolas Acero
+ *               Huynh-Tan Truong
+ *               Li Zhao
+ *
+ *      Co-Author: Eugen Lutz
+ */
+
 //Includes all the headers necessary to use the most common public pieces of the ROS system.
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>

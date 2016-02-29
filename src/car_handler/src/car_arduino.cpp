@@ -1,3 +1,12 @@
+/*
+ * car_arduino.cpp
+ *
+ *      Authors: Sebastian Ehmes
+ *				 Nicolas Acero
+ *				 Huynh-Tan Truong
+ *				 Li Zhao
+ */
+
 #include <iostream>
 #include <car_handler/cArduino.h>
 #include <string>

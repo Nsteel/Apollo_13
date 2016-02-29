@@ -1,8 +1,10 @@
 /*
  * Speedometer.h
  *
- *  Created on: 23.11.2015
- *      Author: Basti
+ *      Authors: Sebastian Ehmes
+ *				 Nicolas Acero
+ *				 Huynh-Tan Truong
+ *				 Li Zhao
  */
 
 

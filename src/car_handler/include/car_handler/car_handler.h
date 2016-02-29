@@ -1,3 +1,14 @@
+/*
+ * car_handler.h
+ *
+ *      Authors: Sebastian Ehmes
+ *				 Nicolas Acero
+ *				 Huynh-Tan Truong
+ *				 Li Zhao
+ *
+ *		Co-Author: Eugen Lutz
+ */
+
 #ifndef CARHANDLER_H_
 #define CARHANDLER_H_
 

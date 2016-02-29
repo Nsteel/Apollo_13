@@ -1,8 +1,10 @@
 /*
  * ForwardKinematics.h
  *
- *  Created on: 24.11.2015
- *      Author: Basti
+ *      Authors: Sebastian Ehmes
+ *				 Nicolas Acero
+ *				 Huynh-Tan Truong
+ *				 Li Zhao
  */
 
 #ifndef FORWARDKINEMATICS_H_
