@@ -10,6 +10,14 @@ Grundsätzlich bieten wir folgende fertig implementierte Funktionen:
             - einschalten der autonomen Durchfahrt durch mit zwei Aruco-Markern
               markierten Tore.
 
+            - Zu Beachten:
+            	- die Smartphone App ist kostenpflichtig und wurde von der Firma Hexler entwickelt.
+            	- Die Apollo_13 Vorlage für TouchOSC ist in apollo_13/data/TouchOSC_Template gespeichert.
+            	- Unsere Vorlage kann mit dem kostenlosen TouchOSC Editor geändert werden.
+            	
+            	- Mehr Information zu TouchOSC und dem Editor unter:
+            	  http://hexler.net/software/touchosc 
+
     2.  Autonome Zielführung mit vorgegebenen Zielenaus Rviz.
         ->  Man gibt in Rviz mit "set 2D-Goal" ein Ziel vor, mit sbpl wird ein
             kollisionsfreier Weg zum Ziel geplant. Hat man dann mit der App
@@ -64,6 +72,13 @@ Aufrufen der Funktionen:
           Es kann etwas dauern bis nach Einschalten der Funktion ein Ziel
           gefunden wurde. Ist eines gefunden worden erscheint ein roter 2D goal
           Marker.
+
+        - Zu Beachten:
+        	- Jeder Aruco-Marker hat eine eindeutige ID und wird nur vom Node car_aruco 
+        	  als gültig erkannt, wenn seine ID in einer yml Datei gespeichert wird 
+        	  und ihr Pfad in apollo_13/config/aruco_boards/boards.yml hinterlegt ist.
+        	  Schauen sie sich am besten die vorhandenen Marker-Beschreibungen 
+        	  in apollo_13/config/aruco_boards/ an. Hierbei ist nur die ID zu ändern. 
 
     Zu 4.)
         - Folgende Befehle in die Konsole eingeben:
