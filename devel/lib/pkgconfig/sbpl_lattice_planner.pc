@@ -1,8 +1,0 @@
-prefix=/home/pses/catkin_ws/devel
-
-Name: sbpl_lattice_planner
-Description: Description of sbpl_lattice_planner
-Version: 0.1.11
-Cflags: -I/home/pses/catkin_ws/devel/include -I/home/pses/catkin_ws/src/global_planner/sbpl_lattice_planner/include
-Libs: -L/home/pses/catkin_ws/devel/lib 
-Requires: message_runtime geometry_msgs

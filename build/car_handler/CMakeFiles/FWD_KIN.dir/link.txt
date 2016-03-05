@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC  -std=c++11 -O3 -DNDEBUG   -shared -Wl,-soname,libFWD_KIN.so -o /home/pses/catkin_ws/devel/lib/libFWD_KIN.so CMakeFiles/FWD_KIN.dir/src/ForwardKinematics.cpp.o 

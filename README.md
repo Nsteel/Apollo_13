@@ -13,7 +13,7 @@ Grundsätzlich bieten wir folgende fertig implementierte Funktionen:
             - Zu Beachten:
             	- die Smartphone App ist kostenpflichtig und wurde von der Firma Hexler entwickelt.
             	- Die Apollo_13 Vorlage für TouchOSC ist in apollo_13/data/TouchOSC_Template gespeichert.
-            	- Unsere Vorlage kann mit dem kostenlosen TouchOSC Editor geändert werden.
+            	- Unsere Vorlage kann mit dem kostenlosen TouchOSC Editor geändert werden. 
 
             	- Mehr Information zu TouchOSC und dem Editor unter:
             	  http://hexler.net/software/touchosc 

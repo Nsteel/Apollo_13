@@ -1,8 +1,0 @@
-prefix=/home/pses/catkin_ws/install
-
-Name: pose_follower
-Description: Description of pose_follower
-Version: 0.1.11
-Cflags: -I/home/pses/catkin_ws/install/include
-Libs: -L/home/pses/catkin_ws/install/lib 
-Requires: nav_core base_local_planner costmap_2d roscpp tf nav_msgs pluginlib

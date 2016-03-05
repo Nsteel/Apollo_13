@@ -1,8 +1,0 @@
-prefix=/home/pses/catkin_ws/install
-
-Name: apollo_13
-Description: Description of apollo_13
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/pses/catkin_ws/install/lib 
-Requires: 

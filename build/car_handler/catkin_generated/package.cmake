@@ -1,7 +1,0 @@
-set(_CATKIN_CURRENT_PACKAGE "car_handler")
-set(car_handler_MAINTAINER "pses <pses@todo.todo>")
-set(car_handler_DEPRECATED "")
-set(car_handler_VERSION "0.0.0")
-set(car_handler_BUILD_DEPENDS "roscpp" "std_msgs" "tf" "nav_msgs")
-set(car_handler_RUN_DEPENDS "roscpp" "std_msgs")
-set(car_handler_BUILDTOOL_DEPENDS "catkin")

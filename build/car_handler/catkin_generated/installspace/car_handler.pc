@@ -1,8 +1,0 @@
-prefix=/home/pses/catkin_ws/install
-
-Name: car_handler
-Description: Description of car_handler
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/pses/catkin_ws/install/lib 
-Requires: 

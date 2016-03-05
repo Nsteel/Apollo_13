@@ -1,2 +1,0 @@
-apollo_13:car_handler:global_planner/pose_follower:global_planner/sbpl:global_planner/sbpl_lattice_planner
--DCATKIN_DEVEL_PREFIX=/home/pses/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/pses/catkin_ws/install -G Unix Makefiles

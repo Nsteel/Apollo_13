@@ -1,8 +1,0 @@
-prefix=/home/pses/catkin_ws/install
-
-Name: sbpl
-Description: Description of sbpl
-Version: 0.0.0
-Cflags: -I/home/pses/catkin_ws/install/include
-Libs: -L/home/pses/catkin_ws/install/lib -lsbpl
-Requires: 
