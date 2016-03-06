@@ -37,7 +37,7 @@
       roslaunch apollo_13 apollo_13.launch <Parameter>
       ```
       - Parameter:  `kinect:=true/false(default), gui:=true(default)/false`
-        - Beispiel:  ```bash roslaunch apollo_13 apollo_13.launch kinect:=false```
+        - Beispiel: `roslaunch apollo_13 apollo_13.launch kinect:=false`
         
     2. Jetzt kann man das auto fernsteuern
     
