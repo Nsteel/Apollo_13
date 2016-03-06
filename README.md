@@ -53,7 +53,7 @@
     - wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
     - `roslaunch apollo_13 car_display.launch`
 
-    - Wie in **2.)** oben beschrieben kann man durch setzen eines Ziels auf der
+    - Wie in __2.)__ oben beschrieben kann man durch setzen eines Ziels auf der
       Karte die Wegplanung in Gang setzen und durch die App die Zielführung
       mit einem Druck auf "autonomous mode" aktivieren.
 
@@ -68,7 +68,7 @@
     - wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
     - `roslaunch apollo_13 car_display.launch`
 
-    - Wie in 3.) oben beschrieben kann man sobald das Fahrzeug zwei Aruco-
+    - Wie in __3.__ oben beschrieben kann man sobald das Fahrzeug zwei Aruco-
       Marker entdeckt hat (grüne Zylinder mit Pfeil auf der Karte) mit
       einem Druck auf "Follow Aruco markers" die Zielführung beginnen.
       Es kann etwas dauern bis nach Einschalten der Funktion ein Ziel
