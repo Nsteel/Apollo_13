@@ -46,9 +46,9 @@
 
 - **Zu 2.)**
     1. Folgende Befehle in die Konsole eingeben:
-    ```bash
+      ```bash
       sudo su
-      roslaunch apollo_13 apollo_13.launch <Parameter>
+      roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
       ```
     2. Wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
     3. `roslaunch apollo_13 car_display.launch`
