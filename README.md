@@ -12,7 +12,7 @@
         - Unsere Vorlage kann mit dem kostenlosen TouchOSC Editor geändert werden. 
 
         - Mehr Information zu TouchOSC und dem Editor unter:
-            	  [http://hexler.net/software/touchosc](http://hexler.net/software/touchosc) 
+                [http://hexler.net/software/touchosc](http://hexler.net/software/touchosc) 
 
 2.  **Autonome Zielführung mit vorgegebenen Zielenaus Rviz.**
     -  Man gibt in Rviz mit "set 2D-Goal" ein Ziel vor, mit sbpl wird ein
@@ -32,13 +32,13 @@
 
 - **Zu 1.)**
     1. Folgende Befehle in die Konsole eingeben:
-    	```bash
-    	sudo su
-    	roslaunch apollo_13 apollo_13.launch <Parameter>
-    	```
+      ```bash
+      sudo su
+      roslaunch apollo_13 apollo_13.launch <Parameter>
+      ```
       - Parameter:  `kinect:=true/false(default), gui:=true(default)/false`
-      	- Beispiel:  `roslaunch apollo_13 apollo_13.launch kinect:=true`
-      	
+        - Beispiel:  `roslaunch apollo_13 apollo_13.launch kinect:=true`
+        
     2. Jetzt kann man das auto fernsteuern
     
     - **_Bemerkung:_** Das Smartphone muss sich im selben Netzwerk befinden wie der Roboter
@@ -46,10 +46,10 @@
 
 - **Zu 2.)**
     1. Folgende Befehle in die Konsole eingeben:
-	 		```bash
-			sudo su
-			roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
-			```
+      ```bash
+      sudo su
+      roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
+      ```
     2. wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
     3. `roslaunch apollo_13 car_display.launch`
     
@@ -59,10 +59,10 @@
 
 - **Zu 3.)**
     1. Folgende Befehle in die Konsole eingeben:
-    	```bash
-  		sudo su
-  		roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
-  		```
+      ```bash
+      sudo su
+      roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
+      ```
     2. wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
     3. `roslaunch apollo_13 aruco_boards.launch`
     4. wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
@@ -77,16 +77,16 @@
 
     - **_Zu Beachten_**:
         - Jeder Aruco-Marker hat eine eindeutige ID und wird nur vom Node car_aruco 
-        	  als gültig erkannt, wenn seine ID in einer yml Datei gespeichert wird 
-        	  und ihr Pfad in `apollo_13/config/aruco_boards/boards.yml` hinterlegt ist.
-        	  Schauen sie sich am besten die vorhandenen Marker-Beschreibungen 
-        	  in `apollo_13/config/aruco_boards/` an. Hierbei ist nur die ID zu ändern. 
+            als gültig erkannt, wenn seine ID in einer yml Datei gespeichert wird 
+            und ihr Pfad in `apollo_13/config/aruco_boards/boards.yml` hinterlegt ist.
+            Schauen sie sich am besten die vorhandenen Marker-Beschreibungen 
+            in `apollo_13/config/aruco_boards/` an. Hierbei ist nur die ID zu ändern. 
 
 - **Zu 4.)**
   1. Folgende Befehle in die Konsole eingeben:
-  	- `roslaunch apollo_13 mapping.launch`
+    - `roslaunch apollo_13 mapping.launch`
   2. Nach dem Mappen folgendes in die Konsole eingeben:
-  	- `rosrun map_server map_saver`
+    - `rosrun map_server map_saver`
 
   - **_Zu Beachten_**:
     - Solange der Drehgeber noch defekt ist, nicht schneller als Stufe 2
@@ -104,6 +104,6 @@
 
 #### Bemerkungen:
    - Sollten beim Start eines launchfiles fehler auftreten, hilft oft der Reset des
-	     Arduinos.
+       Arduinos.
    - Ebenso treten Fehlermeldungen bei einem kritischen Batteriestand der 
-	     Kinect auf.
+       Kinect auf.
