@@ -31,22 +31,22 @@
 ## Aufrufen der Funktionen:
 
 - **Zu 1.)**
-    - Folgende Befehle in die Konsole eingeben:
-    	```bash
+    1. Folgende Befehle in die Konsole eingeben:
+    - ```bash
     	sudo su
     	roslaunch apollo_13 apollo_13.launch <Parameter>
     	```
 
       - Parameter:  `kinect:=true/false(default), gui:=true(default)/false`
       	- Beispiel:  `roslaunch apollo_13 apollo_13.launch kinect:=true`
-
-    - Das Smartphone muss sich im selben Netzwerk befinden wie der Roboter
+      	
+    2. Jetzt kann man das auto fernsteuern
+    - **_Bemerkung:_** Das Smartphone muss sich im selben Netzwerk befinden wie der Roboter
       und TouchOSC muss installiert und gestartet sein.
-    - jetzt kann man das auto fernsteuern
 
 - **Zu 2.)**
     1. Folgende Befehle in die Konsole eingeben:
-		```bash
+	 - ```bash
 		sudo su
 		roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
 		```
@@ -58,7 +58,7 @@
 
 - **Zu 3.)**
     1. Folgende Befehle in die Konsole eingeben:
-    	```bash
+    - ```bash
   		sudo su
   		roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
   		```
@@ -81,11 +81,11 @@
         	  Schauen sie sich am besten die vorhandenen Marker-Beschreibungen 
         	  in `apollo_13/config/aruco_boards/` an. Hierbei ist nur die ID zu ändern. 
 
-- Zu 4.)
+- **Zu 4.)**
   1. Folgende Befehle in die Konsole eingeben:
-  2. `roslaunch apollo_13 mapping.launch`
-	3. nach dem mappen folgendes in die Konsole eingeben:
-	`rosrun map_server map_saver`
+        - `roslaunch apollo_13 mapping.launch`
+  2. Nach dem Mappen folgendes in die Konsole eingeben:
+        - `rosrun map_server map_saver`
 
   - **_Zu Beachten_**:
     - Solange der Drehgeber noch defekt ist, nicht schneller als Stufe 2
