@@ -37,36 +37,35 @@
     	roslaunch apollo_13 apollo_13.launch <Parameter>
     	```
 
-         - Parameter:  `kinect:=true/false(default), gui:=true(default)/false`
-            - Beispiel:  `roslaunch apollo_13 apollo_13.launch kinect:=true`
+      - Parameter:  `kinect:=true/false(default), gui:=true(default)/false`
+      	- Beispiel:  `roslaunch apollo_13 apollo_13.launch kinect:=true`
 
     - Das Smartphone muss sich im selben Netzwerk befinden wie der Roboter
       und TouchOSC muss installiert und gestartet sein.
     - jetzt kann man das auto fernsteuern
 
 - **Zu 2.)**
-    - Folgende Befehle in die Konsole eingeben:
-		```
+    1. Folgende Befehle in die Konsole eingeben:
+		```bash
 		sudo su
 		roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
 		```
-    - wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
-    - `roslaunch apollo_13 car_display.launch`
-
-    - Wie in _2.)_ oben beschrieben kann man durch setzen eines Ziels auf der
+    2. wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
+    3. `roslaunch apollo_13 car_display.launch`
+    4. Wie in _2.)_ oben beschrieben kann man durch setzen eines Ziels auf der
       Karte die Wegplanung in Gang setzen und durch die App die Zielführung
       mit einem Druck auf "autonomous mode" aktivieren.
 
 - **Zu 3.)**
-    - Folgende Befehle in die Konsole eingeben:
-    		```
-    		sudo su
-    		roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
-    		```
-    - wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
-    - `roslaunch apollo_13 aruco_boards.launch`
-    - wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
-    - `roslaunch apollo_13 car_display.launch`
+    1. Folgende Befehle in die Konsole eingeben:
+    	```bash
+  		sudo su
+  		roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
+  		```
+    2. wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
+    3. `roslaunch apollo_13 aruco_boards.launch`
+    4. wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
+    5. `roslaunch apollo_13 car_display.launch`
 
     - Wie in _3.)_ oben beschrieben kann man sobald das Fahrzeug zwei Aruco-
       Marker entdeckt hat (grüne Zylinder mit Pfeil auf der Karte) mit
@@ -83,27 +82,27 @@
         	  in `apollo_13/config/aruco_boards/` an. Hierbei ist nur die ID zu ändern. 
 
 - Zu 4.)
-    1. Folgende Befehle in die Konsole eingeben:
-    2. `roslaunch apollo_13 mapping.launch`
+  1. Folgende Befehle in die Konsole eingeben:
+  2. `roslaunch apollo_13 mapping.launch`
 	3. nach dem mappen folgendes in die Konsole eingeben:
 	`rosrun map_server map_saver`
 
-    - **_Zu Beachten_**:
-        - Solange der Drehgeber noch defekt ist, nicht schneller als Stufe 2
-          vorwärts fahren oder -3 rückwärts.
-        - Winkelgeschwindigkeiten minimieren, d.h. kurven langsam fahren oder
-          große Lenkeinschläge vermeiden.
-        - Nicht länger als unbedingt notwendig auf der Stelle stehen bleiben,
-          da der IMU trotz Filterung irgendwann das "klettern" anfängt und sich
-          der Raum aus Sicht des Roboters zu drehen beginnt.
-        - gerade Gänge auch gerade durchfahren, wegen der bregrenzten Sicht der
-          Kinect werden sonst Wandstücke aneinander gesetzt, das ist nicht immer
-          perfekt und kann zu leichten Krümmungen in langen Gängen führen.
-        - Tips zum Mappen unter diesem Link:
-          [http://wiki.ros.org/slam_gmapping/Tutorials/MappingFromLoggedData](http://wiki.ros.org/slam_gmapping/Tutorials/MappingFromLoggedData)
+  - **_Zu Beachten_**:
+    - Solange der Drehgeber noch defekt ist, nicht schneller als Stufe 2
+      vorwärts fahren oder -3 rückwärts.
+    - Winkelgeschwindigkeiten minimieren, d.h. kurven langsam fahren oder
+      große Lenkeinschläge vermeiden.
+    - Nicht länger als unbedingt notwendig auf der Stelle stehen bleiben,
+      da der IMU trotz Filterung irgendwann das "klettern" anfängt und sich
+      der Raum aus Sicht des Roboters zu drehen beginnt.
+    - gerade Gänge auch gerade durchfahren, wegen der bregrenzten Sicht der
+      Kinect werden sonst Wandstücke aneinander gesetzt, das ist nicht immer
+      perfekt und kann zu leichten Krümmungen in langen Gängen führen.
+    - Tips zum Mappen unter diesem Link:
+      [http://wiki.ros.org/slam_gmapping/Tutorials/MappingFromLoggedData](http://wiki.ros.org/slam_gmapping/Tutorials/MappingFromLoggedData)
 
 #### Bemerkungen:
    - Sollten beim Start eines launchfiles fehler auftreten, hilft oft der Reset des
 	     Arduinos.
-    - Ebenso treten Fehlermeldungen bei einem kritischen Batteriestand der 
+   - Ebenso treten Fehlermeldungen bei einem kritischen Batteriestand der 
 	     Kinect auf.
