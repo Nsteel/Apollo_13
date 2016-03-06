@@ -46,10 +46,10 @@
 
 - **Zu 2.)**
     1. Folgende Befehle in die Konsole eingeben:
-	 - ```bash
-		sudo su
-		roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
-		```
+	 		```bash
+			sudo su
+			roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
+			```
     2. wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
     3. `roslaunch apollo_13 car_display.launch`
     4. Wie in _2.)_ oben beschrieben kann man durch setzen eines Ziels auf der
@@ -58,7 +58,7 @@
 
 - **Zu 3.)**
     1. Folgende Befehle in die Konsole eingeben:
-    - ```bash
+    	```bash
   		sudo su
   		roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
   		```
@@ -83,9 +83,9 @@
 
 - **Zu 4.)**
   1. Folgende Befehle in die Konsole eingeben:
-        - `roslaunch apollo_13 mapping.launch`
+  	- `roslaunch apollo_13 mapping.launch`
   2. Nach dem Mappen folgendes in die Konsole eingeben:
-        - `rosrun map_server map_saver`
+  	- `rosrun map_server map_saver`
 
   - **_Zu Beachten_**:
     - Solange der Drehgeber noch defekt ist, nicht schneller als Stufe 2
