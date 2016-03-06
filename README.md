@@ -46,7 +46,7 @@
 
 - **Zu 2.)**
     1. Folgende Befehle in die Konsole eingeben:
-      ```bash
+    ```bash
       sudo su
       roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
       ```
@@ -59,7 +59,7 @@
 
 - **Zu 3.)**
     1. Folgende Befehle in die Konsole eingeben:
-      ```bash
+    ```bash
       sudo su
       roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
       ```
