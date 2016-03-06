@@ -36,11 +36,11 @@
     	sudo su
     	roslaunch apollo_13 apollo_13.launch <Parameter>
     	```
-
       - Parameter:  `kinect:=true/false(default), gui:=true(default)/false`
       	- Beispiel:  `roslaunch apollo_13 apollo_13.launch kinect:=true`
       	
     2. Jetzt kann man das auto fernsteuern
+    
     - **_Bemerkung:_** Das Smartphone muss sich im selben Netzwerk befinden wie der Roboter
       und TouchOSC muss installiert und gestartet sein.
 
@@ -52,7 +52,8 @@
 			```
     2. wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
     3. `roslaunch apollo_13 car_display.launch`
-    4. Wie in _2.)_ oben beschrieben kann man durch setzen eines Ziels auf der
+    
+    - Wie in _2.)_ oben beschrieben kann man durch setzen eines Ziels auf der
       Karte die Wegplanung in Gang setzen und durch die App die Zielführung
       mit einem Druck auf "autonomous mode" aktivieren.
 
