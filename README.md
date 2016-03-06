@@ -48,9 +48,9 @@
     1. Folgende Befehle in die Konsole eingeben:
       ```bash
       sudo su
-      roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
+      roslaunch apollo_13 apollo_13.launch <Parameter>
       ```
-    2. wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
+    2. Wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
     3. `roslaunch apollo_13 car_display.launch`
     
     - Wie in _2.)_ oben beschrieben kann man durch setzen eines Ziels auf der
@@ -63,7 +63,7 @@
       sudo su
       roslaunch apollo_13 apollo_13.launch kinect:=true gui:=false
       ```
-    2. wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
+    2. Wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
     3. `roslaunch apollo_13 aruco_boards.launch`
     4. wenn der Startvorgang abgeschlossen ist, neues Konsolenfenster:
     5. `roslaunch apollo_13 car_display.launch`
