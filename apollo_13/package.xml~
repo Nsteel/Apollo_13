@@ -50,8 +50,6 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>tf</build_depend>
-  <build_depend>cv_bridge</build_depend>
-  <build_depend>image_transport</build_depend>
   <run_depend>ar_sys</run_depend>
   <run_depend>freenect_launch</run_depend>
   <run_depend>freenect_camera</run_depend>
@@ -66,8 +64,6 @@
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>tf</run_depend>
-  <run_depend>image_transport</run_depend>
-  <run_depend>cv_bridge</run_depend>
 
  <!-- build_depend>car_handler</build_depend -->
  <!-- run_depend>car_handler</run_depend -->
