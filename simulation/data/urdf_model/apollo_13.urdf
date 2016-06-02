@@ -1,0 +1,281 @@
+<?xml version="1.0"?>
+<robot name="blinky">
+  <link name="base_footprint">
+    <visual>
+      <geometry>
+        <box size=".40 .20 0"/>
+      </geometry>
+      <material name="nothing">
+        <color rgba="0 0 0 0"/>
+      </material>
+    </visual>
+  </link>
+
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size=".40 .20 .18"/>
+      </geometry>
+      <material name="red">
+        <color rgba="0 0 .8 .3"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="base_link_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 .1"/>
+  </joint>
+
+  <link name="base_laser">
+    <visual>
+      <geometry>
+        <box size=".066 .24 .066"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 .7"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="base_laser_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="base_laser"/>
+    <origin xyz=".18 0 .1"/>
+  </joint>
+
+  <link name="front_sensor">
+    <visual>
+      <geometry>
+        <box size=".05 .05 .05"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 .3"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="front_sensor_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="front_sensor"/>
+    <origin xyz=".175 0 -.06"/>
+  </joint>
+
+  <link name="left_sensor">
+    <visual>
+      <geometry>
+        <box size=".05 .05 .05"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 .3"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="left_sensor_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="left_sensor"/>
+    <origin xyz="0 .1 -.06" rpy="0 0 1.57"/>
+  </joint>
+
+  <link name="right_sensor">
+    <visual>
+      <geometry>
+        <box size=".05 .05 .05"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 .3"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="right_sensor_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="right_sensor"/>
+    <origin xyz="0 -.1 -.06" rpy="0 0 -1.57"/>
+  </joint>
+
+  <link name="scan">
+    <visual>
+      <geometry>
+        <box size="0 0 0"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 0"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="scan_joint" type="fixed">
+    <parent link="base_laser"/>
+    <child link="scan"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+
+
+  <link name="rear_right_wheel">
+    <visual>
+      <geometry>
+        <cylinder length=".045" radius=".05"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 .7"/>
+      </material>
+      <origin xyz="0 -.02 0" rpy="1.57075 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="rear_right_wheel_joint" type="continuous">
+    <axis xyz="0 1 0"/>
+    <parent link="base_link"/>
+    <child link="rear_right_wheel"/>
+    <origin xyz="-.14 -.10 -.05"/>
+  </joint>
+
+  <link name="rear_left_wheel">
+    <visual>
+      <geometry>
+        <cylinder length=".045" radius=".05"/>
+      </geometry>
+      <material name="black"/>
+      <origin xyz="0 .02 0" rpy="1.57075 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="rear_left_wheel_joint" type="continuous">
+    <axis xyz="0 1 0"/>
+    <parent link="base_link"/>
+    <child link="rear_left_wheel"/>
+    <origin xyz="-.14 0.1 -.05"/>
+  </joint>
+
+  <link name="front_right_steering"/>
+
+  <joint name="front_right_steering_joint" type="revolute">
+    <limit lower="-1.57075" upper="1.57075" effort="-1" velocity="-1"/>
+    <axis xyz="0 0 1"/>
+    <parent link="base_link"/>
+    <child link="front_right_steering"/>
+    <origin xyz=".14 -0.1 -.05"/>
+  </joint>
+
+  <link name="front_right_wheel">
+    <visual>
+      <geometry>
+        <cylinder length=".045" radius=".05"/>
+      </geometry>
+      <material name="black"/>
+      <origin xyz="0 -.02 0" rpy="1.57075 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="front_right_wheel_joint" type="continuous">
+    <axis xyz="0 1 0"/>
+    <parent link="front_right_steering"/>
+    <child link="front_right_wheel"/>
+  </joint>
+
+  <link name="front_left_steering"/>
+
+  <joint name="front_left_steering_joint" type="revolute">
+    <limit lower="-1.57075" upper="1.57075" effort="-1" velocity="-1"/>
+    <axis xyz="0 0 1"/>
+    <parent link="base_link"/>
+    <child link="front_left_steering"/>
+    <origin xyz=".14 .1 -.05"/>
+  </joint>
+
+  <link name="front_left_wheel">
+    <visual>
+      <geometry>
+        <cylinder length=".045" radius=".05"/>
+      </geometry>
+      <material name="black"/>
+      <origin xyz="0 .02 0" rpy="1.57075 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="front_left_wheel_joint" type="continuous">
+    <axis xyz="0 1 0"/>
+    <parent link="front_left_steering"/>
+    <child link="front_left_wheel"/>
+  </joint>
+
+  <link name="steering_servo">
+    <visual>
+      <geometry>
+        <box size=".04 .02 .01"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0 110 0 .5"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="steering_servo_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="steering_servo"/>
+    <origin xyz=".08 0 -.04"/>
+  </joint>
+
+  <transmission name="front_left_steering_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="front_left_steering_joint">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="steering_servo">
+      <mechanicalReduction>-2.35</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="front_right_steering_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="front_right_steering_joint">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="steering_servo">
+      <mechanicalReduction>-2.35</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="front_left_wheel_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="front_left_wheel_joint">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="drive_motor">
+      <mechanicalReduction>13.0</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="front_right_wheel_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="front_right_wheel_joint">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="drive_motor">
+      <mechanicalReduction>13.0</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="rear_left_wheel_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="rear_left_wheel_joint">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="drive_motor">
+      <mechanicalReduction>13.0</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="rear_right_wheel_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="rear_right_wheel_joint">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="drive_motor">
+      <mechanicalReduction>13.0</mechanicalReduction>
+    </actuator>
+  </transmission>
+</robot>
