@@ -1,22 +1,20 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(apollo_13)
+project(lane_detector)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  ar_sys
-  geometry_msgs
-  move_base
-  nav_msgs
   roscpp
-  rospy
   sensor_msgs
+  cv_bridge
+  image_transport
   std_msgs
-  costmap_2d
-  tf
-  car_handler
+  dynamic_reconfigure
+  swri_profiler
 )
+find_package(OpenCV 2 REQUIRED)
+find_package(OpenMP REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -75,7 +73,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   geometry_msgs#   nav_msgs#   sensor_msgs#   std_msgs
+#   sensor_msgs
 # )
 
 ################################################
@@ -92,11 +90,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * uncomment the "generate_dynamic_reconfigure_options" section below
 ##     and list every .cfg file to be processed
 
-## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
+##Generate dynamic reconfigure parameters in the 'cfg' folder
+generate_dynamic_reconfigure_options(
+    cfg/Detector.cfg
 #   cfg/DynReconf2.cfg
-# )
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -109,8 +107,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES apollo_13
-#  CATKIN_DEPENDS ar_sys freenect_launch geometry_msgs move_base nav_msgs roscpp rospy sensor_msgs std_msgs tf
+#  LIBRARIES lane_detector
+#  CATKIN_DEPENDS OpenCV roscpp sensor_msgs
 #  DEPENDS system_lib
 )
 
@@ -121,27 +119,37 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include 
+  ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+)
 
 ## Declare a C++ library
-# add_library(apollo_13 src/${PROJECT_NAME}/apollo_13.cpp)
+add_library(CANNY src/cannyEdge.cpp)
+add_library(HOUGH src/houghTransform.cpp)
+add_library(FITTING src/fittingApproach.cpp)
+
+## Declare a C++ executable
+add_executable(lane_detector src/lane_detector.cpp)
+add_executable(camera_simulator src/camera_simulator.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(apollo_13 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-## Declare a C++ executable
-add_executable(apollo_13 src/apollo_13.cpp)
-add_executable(car_aruco src/car_aruco.cpp)
+add_dependencies(lane_detector ${PROJECT_NAME}_gencfg)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(apollo_13_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(lane_detector_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(apollo_13 ${catkin_LIBRARIES} )
-target_link_libraries(car_aruco ${catkin_LIBRARIES} )
+
+target_link_libraries(CANNY ${OpenCV_LIBRARIES} swri_profiler)
+target_link_libraries(HOUGH ${OpenCV_LIBRARIES} swri_profiler)
+target_link_libraries(FITTING ${OpenCV_LIBRARIES} swri_profiler ${catkin_LIBRARIES})
+target_link_libraries(lane_detector ${catkin_LIBRARIES} CANNY HOUGH FITTING)
+target_link_libraries(lane_detector ${OpenCV_LIBRARIES})
+target_link_libraries(camera_simulator ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 
 #############
 ## Install ##
@@ -158,7 +166,7 @@ target_link_libraries(car_aruco ${catkin_LIBRARIES} )
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS apollo_13 apollo_13_node
+# install(TARGETS lane_detector lane_detector_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -197,10 +205,11 @@ endif()
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_apollo_13.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_lane_detector.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")

@@ -137,7 +137,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 ## Declare a C++ executable
 add_executable(apollo_13 src/apollo_13.cpp)
 add_executable(car_aruco src/car_aruco.cpp)
-add_executable(apollo_13 src/lane_follower.cpp)
+add_executable(lane_follower src/lane_follower.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

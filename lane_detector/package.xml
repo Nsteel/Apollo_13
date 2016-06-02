@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <package>
-  <name>apollo_13</name>
+  <name>lane_detector</name>
   <version>0.0.0</version>
-  <description>The apollo_13 package</description>
+  <description>The lane_detector package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
   <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="pses@todo.todo">pses</maintainer>
+  <maintainer email="n@todo.todo">n</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/apollo_13</url> -->
+  <!-- <url type="website">http://wiki.ros.org/lane_detector</url> -->
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->
@@ -40,33 +40,13 @@
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>ar_sys</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>move_base</build_depend>
-  <build_depend>nav_msgs</build_depend>
+  <build_depend>OpenCV</build_depend>
   <build_depend>roscpp</build_depend>
-  <build_depend>rososc</build_depend>
-  <build_depend>rospy</build_depend>
   <build_depend>sensor_msgs</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>tf</build_depend>
-  <run_depend>ar_sys</run_depend>
-  <run_depend>freenect_launch</run_depend>
-  <run_depend>freenect_camera</run_depend>
-  <run_depend>rviz</run_depend>
-  <run_depend>urdf</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>move_base</run_depend>
-  <run_depend>nav_msgs</run_depend>
+  <run_depend>OpenCV</run_depend>
   <run_depend>roscpp</run_depend>
-  <run_depend>rososc</run_depend>
-  <run_depend>rospy</run_depend>
   <run_depend>sensor_msgs</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>tf</run_depend>
 
- <!-- build_depend>car_handler</build_depend -->
- <!-- run_depend>car_handler</run_depend -->
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
