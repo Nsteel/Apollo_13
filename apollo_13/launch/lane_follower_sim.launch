@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+
+	<!--node pkg="apollo_13" type="lane_follower" name="lane_follower" output="screen"/ -->
+	<node pkg="lane_detector" type="lane_detector" name="lane_detector" output="screen" launch-prefix="xterm -e gdb --args"/>
+
+	<!-- Set params -->
+	<!--node name="dynamic_reconfigure_load" pkg="dynamic_reconfigure" type="dynparam" args="load lane_detector $(find lane_detector)/cfg/lane_detector_params.yaml" /-->
+
+	<!-- Bring up the Kinect -->
+	<!-- node pkg="lane_detector" type="camera_simulator" name="camera_simulator" /-->
+	<node pkg="image_view" type="image_view" name="image_viewer">
+		<remap from="image" to="/lane_detector/result"/>
+	</node>
+	<node name="kinect_throttler" type="throttle" pkg="topic_tools" args="messages /camera/rgb/image_rect_mono 30 /kinect_mono_throttled" />
+</launch>
