@@ -84,8 +84,8 @@ set( QT_USE_QTXML TRUE )
 ## Generate added messages and services with any dependencies listed here
  generate_messages(
    DEPENDENCIES
-  std_msgs
-  geometry_msgs
+   std_msgs
+   geometry_msgs
  )
 
 ################################################
