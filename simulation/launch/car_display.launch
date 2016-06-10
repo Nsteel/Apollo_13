@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  
+    <param name="robot_description" textfile="$(find simulation)/data/urdf_model/apollo_13.urdf"/>
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find simulation)/data/viewer/viewer.rviz"/>
+
+</launch>
