@@ -129,7 +129,7 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+include_directories(include)
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(include ${OpenCV_INCLUDE_DIRS})
 #include_directories(include ${Qt5_INCLUDE_DIRS})
@@ -169,10 +169,10 @@ add_dependencies(simulation_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
    ${catkin_LIBRARIES} CAR_MODEL FWD_KIN
  )
  target_link_libraries(scan_node
-   ${catkin_LIBRARIES} ${OpenCV_LIBS} RAY_CAST
+   ${catkin_LIBRARIES} ${OpenCV_LIBS} RAY_CAST yaml-cpp
  )
  target_link_libraries(usrange_node
-   ${catkin_LIBRARIES} ${OpenCV_LIBS} RAY_CAST
+   ${catkin_LIBRARIES} ${OpenCV_LIBS} RAY_CAST yaml-cpp
  )
 #target_link_libraries(dashboard_node ${catkin_LIBRARIES} ${Qt5_LIBRARIES} Qt5::Widgets Qt5::Core Qt5::Gui DASH)
 target_link_libraries(DASH Qt5::Widgets Qt5::Core Qt5::Gui)
