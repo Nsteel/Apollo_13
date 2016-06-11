@@ -17,19 +17,21 @@ typedef std::vector< std::vector<cv::Point> > contVector;
 
 class FloatingEdges {
 public:
-	FloatingEdges();
-	void getEdges(const cv::Mat& map);
-	cv::Mat drawEdges();
+								FloatingEdges(const double vehicleWidth, const double mapResolution);
+								void getEdges(const cv::Mat& map);
+								cv::Mat drawEdges();
 
 private:
-	cv::Mat map, th_all_map, th_wall_map, all_edges, wall_only_edges, bw_mask, black, floating_edges;
-	contours edges;
-	contVector detectedEdges;
-	std::vector<cv::Vec4i>hierarchy;
+								double vehicleWidth;
+								double mapResolution;
+								cv::Mat map, th_all_map, th_wall_map, all_edges, wall_only_edges, bw_mask, black, floating_edges;
+								contours edges;
+								contVector detectedEdges;
+								std::vector<cv::Vec4i>hierarchy;
 
-	void imgProc();
-	void detectEdges();
-	bool findFloatingEdges();
+								void imgProc();
+								void detectEdges();
+								bool findFloatingEdges();
 
 };
 

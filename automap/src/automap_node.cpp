@@ -40,7 +40,7 @@ int main(int argc, char **argv){
         cv::Mat map;
         sensor_msgs::ImagePtr edgeImageMsg;
 
-        FloatingEdges fe;
+        FloatingEdges fe(0.6, 0.05);
 
         ros::Subscriber mapMetaSub = nh.subscribe<nav_msgs::MapMetaData>("map_metadata", 10, boost::bind(mapMetaCallback, _1, &mapMetaData));
         ros::Subscriber mapSub = nh.subscribe<nav_msgs::OccupancyGrid>("map", 10, boost::bind(mapCallback, _1, &map));
@@ -48,7 +48,7 @@ int main(int argc, char **argv){
         image_transport::Publisher edgePub = it.advertise("floatingEdges", 1);
 
         // Loop starts here:
-        ros::Rate loop_rate(1);
+        ros::Rate loop_rate(10);
         while(ros::ok()) {
 
                 cv::Rect imROI(0, 0, map.rows, map.cols);
