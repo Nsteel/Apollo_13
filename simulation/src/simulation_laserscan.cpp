@@ -14,9 +14,6 @@
 typedef std::shared_ptr<sensor_msgs::LaserScan> scan_msg_ptr;
 typedef std::shared_ptr<geometry_msgs::Pose> pose_msg_ptr;
 
-const double loopRate = 40.0;
-nav_msgs::MapMetaData mapInfo;
-
 namespace YAML {
 template<>
 struct convert<geometry_msgs::Pose> {
@@ -41,40 +38,48 @@ struct convert<geometry_msgs::Pose> {
 };
 }
 
-pose_msg_ptr setLaserPosition(const tf::TransformListener& listener){
-        tf::StampedTransform stf;
-        listener.lookupTransform("map", "scan", ros::Time(0), stf);
-        tf::Stamped<tf::Pose> tmp(stf, stf.stamp_, "map");
-        geometry_msgs::PoseStamped tmp2;
-        tf::poseStampedTFToMsg(tmp,tmp2);
-        return std::make_shared<geometry_msgs::Pose>(tmp2.pose);
-}
-
-rc::vec2i_ptr setGridPosition(geometry_msgs::Pose& laser){
+rc::vec2i_ptr setGridPosition(geometry_msgs::Pose& laser, nav_msgs::MapMetaData& mapInfo){
         unsigned int grid_x = (unsigned int)((laser.position.x - mapInfo.origin.position.x) / mapInfo.resolution);
         unsigned int grid_y = (unsigned int)((-laser.position.y - mapInfo.origin.position.y) / mapInfo.resolution);
-        //ROS_INFO("x: %u / y: %u", grid_x, grid_y);
-        //ROS_INFO("map_x: %lf / map_y: %lf", mapInfo.origin.position.x, mapInfo.origin.position.y);
         return std::make_shared<cv::Vec2i>(cv::Vec2i(grid_x, grid_y));
 }
 
-double getYaw(geometry_msgs::Pose& laser){
-        double roll, pitch, yaw;
+void getPositionInfo(const std::string& base_frame, const std::string& target_frame, const tf::TransformListener& listener, geometry_msgs::Pose * position, std::vector<double> * rpy){
+        bool transformReady = false;
+        tf::StampedTransform stf;
+        tf::Stamped<tf::Pose> tmp;
+        geometry_msgs::PoseStamped tmp2;
+        tf::Quaternion q;
+
         try{
-                tf::Quaternion q;
-                //q = q.normalize();
-                tf::quaternionMsgToTF(laser.orientation, q);
-                //ROS_INFO("x %f y %f z %f w %f" ,laser.orientation.x, laser.orientation.y, laser.orientation.z, laser.orientation.w);
-                //q = q.normalize();
-                tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
-        }catch(std::exception ex) {
-                //ROS_ERROR("%s", ex.what());
+                transformReady = listener.waitForTransform (base_frame, target_frame, ros::Time(0), ros::Duration(0.01));
+
         }
-        //ROS_INFO("YAW: %f", yaw);
-        if(!isnan(yaw)) {
-                return rc::radToDeg(yaw);
-        }else{
-                return 0.0;
+        catch (tf::TransformException ex) {
+                ROS_ERROR("%s",ex.what());
+
+        }
+
+        if(transformReady) {
+                try{
+                        listener.lookupTransform(base_frame, target_frame, ros::Time(0), stf);
+
+                }
+                catch (tf::TransformException ex) {
+                        ROS_ERROR("%s",ex.what());
+
+                }
+                tmp = tf::Stamped<tf::Pose>(stf, stf.stamp_, base_frame);
+                tf::poseStampedTFToMsg(tmp,tmp2);
+                *position = tmp2.pose;
+
+                try{
+                        tf::quaternionMsgToTF(tmp2.pose.orientation, q);
+                        tf::Matrix3x3(q).getRPY((*rpy)[0], (*rpy)[1], (*rpy)[2]);
+                }catch(std::exception ex) {
+                        ROS_ERROR("%s", ex.what());
+                }
+
         }
 }
 
@@ -87,6 +92,8 @@ int main(int argc, char **argv){
 
         sensor_msgs::LaserScan scan;
 
+        // get "god" map meta info
+        nav_msgs::MapMetaData mapInfo;
         std::string imgMetaPath = ros::package::getPath("simulation") + "/data/map/map.yaml";
         YAML::Node imgMetaInfo = YAML::LoadFile(imgMetaPath);
         double resolution = imgMetaInfo["resolution"].as<double>();
@@ -94,13 +101,18 @@ int main(int argc, char **argv){
         mapInfo.origin = origin;
         mapInfo.resolution = resolution;
 
+        // get "god" map
         std::string imagePath = ros::package::getPath("simulation") + "/data/map/map.pgm";
         cv::Mat map = cv::imread(imagePath,1);
+
+        // sensor object
         rc::Raycaster rc_laser = rc::Raycaster(map, 0.05, 120.0, 90.0, 0.5);
+
+        // variables needed for transformations
         tf::TransformListener listener;
-        geometry_msgs::Pose laserPosition;
+        geometry_msgs::Pose position;
+        std::vector<double> rpy(3, 0.0);
         rc::vec2i_ptr gridPose;
-        double yaw;
 
         ros::Time currentTime = ros::Time::now();
 
@@ -114,19 +126,17 @@ int main(int argc, char **argv){
         scan.angle_max = rc::degToRad(minMax.second);
 
         // Loop starts here:
-        ros::Rate loop_rate(loopRate);
+        ros::Rate loop_rate(50);
         while(ros::ok()) {
                 currentTime = ros::Time::now();
                 scan.header.stamp = currentTime;
-                try{
-                        laserPosition = *setLaserPosition(listener);
-                }catch(tf::TransformException ex) {
-                        //ROS_ERROR("%s", ex.what());
-                }
-                gridPose = setGridPosition(laserPosition);
-                yaw = getYaw(laserPosition);
-                scan.ranges = *rc_laser.getRangeInfo(gridPose, yaw);
 
+                //get laser range infos
+                getPositionInfo("map", "scan", listener, &position, &rpy);
+                gridPose = setGridPosition(position, mapInfo);
+                scan.ranges = *rc_laser.getRangeInfo(gridPose, rc::radToDeg(rpy[2]));
+
+                //publish sensor msgs
                 scanPub.publish(scan);
                 ros::spinOnce();
                 loop_rate.sleep();

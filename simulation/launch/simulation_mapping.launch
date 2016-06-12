@@ -15,9 +15,9 @@
 	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
 	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
 	<!-- Run the necessary nodes to bring up the car -->
-	<node pkg="simulation" type="simulation_node" name="simulation" output="screen"/>
+	<node pkg="simulation" type="simulation_node" name="simulation" />
 	<node pkg="simulation" type="scan_node" name="scan_simulation" output="screen"/>
-	<node pkg="simulation" type="usrange_node" name="usrange_simulation" output="screen"/>
+	<node pkg="simulation" type="usrange_node" name="usrange_simulation" />
 	<node pkg="automap" type="automap_node" name="automap" output="screen"/>
 
   <!-- Run the mapping -->
