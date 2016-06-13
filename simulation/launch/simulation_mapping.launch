@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+	<master auto="start"/>
+
+	<arg name="sbpl" default="false"/>
+	<arg name="dashboard" default="true"/>
+	<arg name="rviz" default="true"/>
+  <arg name="gmapper" default="true"/>
+
+	<!-- Set static tf transformations -->
+  <group unless="$(arg gmapper)">
+	<node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 map odom 10"/>
+  </group>
+	<param name="robot_description" textfile="$(find simulation)/data/urdf_model/mapping_model.urdf"/>
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
+	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+	<!-- Run the necessary nodes to bring up the car -->
+	<node pkg="simulation" type="simulation_node" name="simulation" />
+	<node pkg="simulation" type="scan_node" name="scan_simulation" output="screen"/>
+	<node pkg="simulation" type="usrange_node" name="usrange_simulation" />
+	<node pkg="automap" type="automap_node" name="automap" output="screen"/>
+
+  <!-- Run the mapping -->
+  <group if="$(arg gmapper)">
+    <!-- <include file="$(find simulation)/launch/amcl.launch"/> -->
+  	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
+	    <param name="scan" value="scan" />
+      <param name="maxUrange" value="5.5" />
+      <param name="maxRange" value="6.0" />
+      <param name="particles" value="120" />
+      <param name="srr" value="0.0" />
+      <param name="srt" value="0.0" />
+      <param name="stt" value="0.0" />
+      <param name="str" value="0.0" />
+      <param name="lsigma" value="0.0" />
+      <param name="minimumScore" value="1000" />
+      <param name="map_update_interval" value="0.1" />
+  	</node>
+  </group>
+	<!-- Run the navigation stack -->
+	<group if="$(arg sbpl)">
+		<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+
+			<!-- Planners -->
+			<param name="base_global_planner" value="SBPLLatticePlanner"/>
+			<param name="base_local_planner" value="pose_follower/PoseFollower"/>
+
+			<!-- Motion primitives file -->
+			<param name="SBPLLatticePlanner/primitive_filename" value="$(find simulation)/data/motion_primitives/apollo_13_motion_primitives.mprim"/>
+
+			<!-- Costmap parameters -->
+			<rosparam file="$(find simulation)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+			<rosparam file="$(find simulation)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+			<rosparam file="$(find simulation)/config/local_costmap_params.yaml" command="load"/>
+			<rosparam file="$(find simulation)/config/global_costmap_params.yaml" command="load"/>
+			<rosparam file="$(find simulation)/config/sbpl_global_params.yaml" command="load"/>
+
+		</node>
+	</group>
+
+	<!-- Show the Rviz visualization 	-->
+	<group if="$(arg rviz)">
+		<node pkg="rviz" type="rviz" name="rviz" args="-d $(find simulation)/data/viewer/viewer.rviz"/>
+
+	</group>
+	<!-- Run the Dashboard Application -->
+	<group if="$(arg dashboard)">
+		<node pkg="simulation" type="dashboard_node" name="dashboard_simulation" output="screen"/>
+	</group>
+</launch>

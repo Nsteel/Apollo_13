@@ -47,7 +47,7 @@ int main(int argc, char **argv){
 
 
         // Loop starts here:
-        ros::Rate loop_rate(30);
+        ros::Rate loop_rate(100);
         while(ros::ok()) {
                 currentTime = ros::Time::now();
                 if(sbplFlag==0) {
