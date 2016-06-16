@@ -90,7 +90,7 @@ int main(int argc, char **argv){
         cv::Mat map;
         sensor_msgs::ImagePtr edgeImageMsg;
 
-        FloatingEdges fe(0.6, 0.05);
+        FloatingEdges fe(0.4, 0.05);
         tf::TransformListener listener;
         geometry_msgs::Pose position;
         std::vector<double> rpy(3, 0.0);
@@ -127,11 +127,11 @@ int main(int argc, char **argv){
                 // make sliding window a region of interest
 								cv::Rect roi = cv::boundingRect(windowBounds);
                 cv::Rect imROI(0, 0, map.rows, map.cols);
-                //cv::Rect ROI(1770, 1670, 800, 600);
+                //cv::Rect roi(1770, 1670, 800, 600);
                 cv::Rect myROI = imROI & roi;
 
                 // feed edge detecter with region of interest
-                fe.getEdges(map(myROI));
+                fe.getEdges(map(myROI), gridPose, rpy[2]/CV_PI*180.0, myROI);
                 cv::Mat out = fe.drawEdges();
                 edgeImageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", out).toImageMsg();
                 edgePub.publish(edgeImageMsg);

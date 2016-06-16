@@ -18,11 +18,21 @@ public:
 								Contour(const edge &vectorOfPoints, const cv::Mat& map);
 								Contour(const Contour &other);
 								void initContour();
+								void setScore(const cv::Point& vehicle, const double& yaw, const cv::Rect& roi);
+								const double getScore() const;
 								const edge& getContour();
 								const cv::Point& getCentroid() const;
 								const double getYaw() const;
 								const cv::Point& getMid() const;
 								const double getLength() const;
+
+								friend bool operator<(const Contour& l, const Contour& r){
+									return l.getScore()<r.getScore();
+								}
+
+								friend bool operator>(const Contour& l, const Contour& r){
+									return l.getScore()>r.getScore();
+								}
 
 private:
 								edge vectorOfPoints;
@@ -31,12 +41,14 @@ private:
 								cv::Point midEdge;
 								double yaw;
 								double length;
+								double score;
 
 								void calcCentroid();
 								void calcMidEdge();
 								void calcLength();
 								void calcDirectionToUnknown();
 								int makeYaw(const int angle) const;
+								double makeYaw(const double angle) const;
 								int correctYawAngle(const int theta, const int increment) const;
 };
 
