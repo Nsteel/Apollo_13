@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <cv.h>
+#include <list>
 #include "Contour.h"
 
 typedef std::vector<Contour> contours;
@@ -18,7 +19,7 @@ typedef std::vector< std::vector<cv::Point> > contVector;
 class FloatingEdges {
 public:
 								FloatingEdges(const double vehicleWidth, const double mapResolution);
-								void getEdges(const cv::Mat& map);
+								void getEdges(const cv::Mat& map, const cv::Point& vehicle, const double& yaw, const cv::Rect& roi);
 								cv::Mat drawEdges();
 
 private:
@@ -31,7 +32,8 @@ private:
 
 								void imgProc();
 								void detectEdges();
-								bool findFloatingEdges();
+								bool findFloatingEdges(const cv::Point& vehicle, const double& yaw, const cv::Rect& roi);
+								void sortByScore();
 
 };
 

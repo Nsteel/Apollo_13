@@ -1,0 +1,3 @@
+PoseFollower:
+  max_vel_lin: 0.4
+  max_rotational_th: 1.0

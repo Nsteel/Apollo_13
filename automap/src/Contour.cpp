@@ -12,7 +12,8 @@ Contour::Contour(const edge& vectorOfPoints, const cv::Mat& map) : vectorOfPoint
 								calcLength();
 
 }
-Contour::Contour(const Contour& other) : vectorOfPoints(other.vectorOfPoints), map(other.map), centroid(other.centroid), midEdge(other.midEdge), yaw(other.yaw), length(other.length){
+Contour::Contour(const Contour& other) : vectorOfPoints(other.vectorOfPoints), map(other.map), centroid(other.centroid),
+								midEdge(other.midEdge), yaw(other.yaw), length(other.length), score(other.score){
 }
 
 void Contour::initContour(){
@@ -22,6 +23,16 @@ void Contour::initContour(){
 }
 const edge& Contour::getContour(){
 								return vectorOfPoints;
+}
+
+void Contour::setScore(const cv::Point& vehicle, const double& yaw, const cv::Rect& roi){
+								cv::Point adjustedVehicle(vehicle.x-roi.x, vehicle.y-roi.y);
+								double distance = cv::norm(adjustedVehicle-centroid);
+								double dYaw = std::fabs(yaw-this->yaw);
+								score = (180-dYaw)*(180-dYaw) * (1/ (1+distance)) *  length;
+}
+const double Contour::getScore() const {
+								return score;
 }
 
 const cv::Point& Contour::getCentroid() const {
@@ -63,7 +74,10 @@ void Contour::calcMidEdge(){
 }
 
 void Contour::calcLength(){
-								length = cv::arcLength(vectorOfPoints, false);
+								length = 0;
+								for(int i = 0; i+1<vectorOfPoints.size(); i++) {
+																length += cv::norm(vectorOfPoints[i]-vectorOfPoints[i+1]);
+								}
 }
 
 void Contour::calcDirectionToUnknown(){
@@ -89,7 +103,7 @@ void Contour::calcDirectionToUnknown(){
 								//since map is in gray scale, this step is not needed
 								//cv::cvtColor(contourMap, contourMap, CV_RGB2GRAY);
 								//reduce noise
-								cv::blur(contourMap, contourMap, cv::Size(5,5));
+								cv::blur(contourMap, contourMap, cv::Size(3,3));
 
 								//calc gray scale gradient
 								cv::Mat grad_x, grad_y, grad;
@@ -109,20 +123,6 @@ void Contour::calcDirectionToUnknown(){
 								phase(grad_x, grad_y, orientation, true);
 								orientation.convertTo(orientation,CV_32S);
 
-								// transform angle to yaw angle
-								for(int i=0; i<orientation.rows; i++) {
-																for(int j = 0; j<orientation.cols; j++) {
-																								int& current = orientation.at<int>(i,j);
-																								// shift CW to CCW angle
-																								current = 360 -current;
-																								// transform to yaw
-																								current = makeYaw(current);
-																								// flip by 90 deg CCW
-																								current = correctYawAngle(current, 90);
-																								// yaw now points in the direction of steepest decline
-																}
-								}
-
 								//remove useless information
 								grad = cv::abs(grad);
 								grad.convertTo(grad,CV_8UC1);
@@ -131,11 +131,20 @@ void Contour::calcDirectionToUnknown(){
 								cv::Mat mask = cv::Mat::zeros(grad.rows, grad.cols, CV_32S);
 								cv::bitwise_and(orientation, mask, orientation, grad);
 
-								// transform global point to roi point
-								//cv::Point roiPoint(midEdge.x - roi.x, midEdge.y - roi.y);
-								cv::Point roiPoint(centroid.x - roi.x, centroid.y - roi.y);
-								// extract phase angle information at roiPoint
-								yaw = orientation.at<int>(roiPoint);
+								yaw = 0;
+								double ts = 0;
+								double tc = 0;
+								// find average over all angles of the gradient
+								for(auto current : vectorOfPoints) {
+																// transform global point to roi point
+																cv::Point roiPoint(current.x - roi.x, current.y - roi.y);
+																int temp_yaw = orientation.at<int>(roiPoint);
+																ts += cv::sin(temp_yaw*CV_PI/180);
+																tc += cv::cos(temp_yaw*CV_PI/180);
+								}
+								// transform angle to yaw angle
+								yaw = std::atan2(ts,tc)/CV_PI*180;
+								yaw = -correctYawAngle(yaw, 180);
 
 								//draw for testing
 								//cv::rectangle(map, roi, cv::Scalar(255, 0, 0), 1, 1);
@@ -150,6 +159,17 @@ int Contour::makeYaw(const int angle) const {
 								}
 								return yaw;
 }
+
+double Contour::makeYaw(const double angle) const {
+								double yaw = angle;
+								if(yaw<-360.0) {
+																yaw += 360.0;
+								}else if(yaw>180.0) {
+																yaw -= 360.0;
+								}
+								return yaw;
+}
+
 int Contour::correctYawAngle(const int theta, const int increment) const {
 								int yaw = 0;
 								int angle = theta + increment;
