@@ -28,7 +28,7 @@
 			<!-- param name="base_local_planner" value="pose_follower/PoseFollower"/ -->
 
 			<!-- Motion primitives file -->
-			<param name="SBPLLatticePlanner/primitive_filename" value="$(find simulation)/data/motion_primitives/apollo_13_motion_primitives.mprim"/>
+			<!-- param name="SBPLLatticePlanner/primitive_filename" value="$(find simulation)/data/motion_primitives/apollo_13_motion_primitives.mprim"/ -->
 
 			<!-- Costmap parameters -->
 			<rosparam file="$(find simulation)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
