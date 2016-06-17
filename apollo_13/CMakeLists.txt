@@ -18,8 +18,9 @@ find_package(catkin REQUIRED COMPONENTS
   car_handler
   image_transport
   cv_bridge
+  carrot_planner
 )
-find_package(OpenCV 2 REQUIRED) 
+find_package(OpenCV 2 REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -146,7 +147,7 @@ add_executable(lane_follower src/lane_follower.cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(apollo_13 ${catkin_LIBRARIES} )
 target_link_libraries(car_aruco ${catkin_LIBRARIES} )
-target_link_libraries(lane_follower ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+target_link_libraries(lane_follower ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${carrot_planner_LIBRARIES})
 
 #############
 ## Install ##
