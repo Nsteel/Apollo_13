@@ -6,7 +6,7 @@
 	<node pkg="lane_detector" type="lane_detector" name="lane_detector" output="screen" launch-prefix="xterm -e gdb --args"/>
 
 	<!-- Set params -->
-	<node name="dynamic_reconfigure_load" pkg="dynamic_reconfigure" type="dynparam" args="load lane_detector $(find lane_detector)/cfg/lane_detector_params.yaml" />
+	<!-- node name="dynamic_reconfigure_load" pkg="dynamic_reconfigure" type="dynparam" args="load lane_detector $(find lane_detector)/cfg/lane_detector_params.yaml" / -->
 
 	<node pkg="car_handler" type="car_handler_node" name="car_handler" />
 
@@ -29,7 +29,7 @@
 			<!-- rosparam file="$(find  apollo_13)/config/poseFollower_params.yaml" command="load"/ -->
 			<rosparam file="$(find  apollo_13)/config/teb_local_planner_lane_follower_params.yaml" command="load"/>
 		</node>
-		
+
 		<node pkg="image_view" type="image_view" name="image_viewer">
 			<remap from="image" to="/lane_detector/result"/>
 		</node>
