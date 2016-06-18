@@ -1,6 +1,6 @@
 global_costmap:
   global_frame: /map
-  robot_base_frame: /base_footprint
+  robot_base_frame: /base_link
   rolling_window: true
   unknown_cost_value: 1.0
   update_frequency: 1.0
