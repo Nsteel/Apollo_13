@@ -5,6 +5,11 @@
 	<arg name="dashboard" default="true"/>
 	<arg name="rviz" default="true"/>
 
+	<!-- Set the robot model -->
+	<param name="robot_description" textfile="$(find simulation)/data/urdf_model/apollo_13.urdf"/>
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
+	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+
 	<node pkg="apollo_13" type="lane_follower" name="lane_follower" output="screen"/>
 	<node pkg="lane_detector" type="lane_detector" name="lane_detector" output="screen" launch-prefix="xterm -e gdb --args"/>
 
@@ -13,14 +18,28 @@
 
 	<!-- Set static tf transformations -->
 	<node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 map odom 10"/>
+	<node pkg="tf" type="static_transform_publisher" name="base_laser_broadcaster" args="0.18 0 0.34 0 0 0 1 base_link base_laser 10" />
+	<node pkg="tf" type="static_transform_publisher" name="front_us_broadcaster" args="0.175 0 -0.06 0 0 0 1 base_link front_sensor 10" />
+	<node pkg="tf" type="static_transform_publisher" name="left_us_broadcaster" args="0 0.1 -0.06 1.57 0 0 base_link left_sensor 10" />
+	<node pkg="tf" type="static_transform_publisher" name="right_us_broadcaster" args="0 -0.1 -0.06 -1.57 0 0 base_link right_sensor 10" />
 
-	<!-- Bring up the car -->
+	<!-- Run the necessary nodes to bring up the car -->
+	<node pkg="apollo_13" type="apollo_13" name="apollo_13" output ="screen" />
 	<node pkg="car_handler" type="car_handler_node" name="car_handler" />
 	<node pkg="car_handler" type="car_arduino" name="car_arduino" output="screen" />
+
+	<!-- Run RosOSC -->
+	<include file="$(find apollo_13)/launch/interaction.launch" />
 
 	<!-- Bring up the Kinect -->
 	<include file="$(find apollo_13)/launch/freenect.launch" />
 	<node name="kinect_throttler" type="throttle" pkg="topic_tools" args="messages /camera/rgb/image_rect_mono 30 /kinect_mono_throttled" />
+
+	<!-- Convert the kinect point cloud to a laserscan message -->
+	<node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan">
+		<remap from="image" to="/camera/depth/image_raw" />
+		<param name="output_frame_id" value="base_laser" />
+	</node>
 
 	<!-- Run the navigation stack -->
 		<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen" >
