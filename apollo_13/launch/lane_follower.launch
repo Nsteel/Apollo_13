@@ -8,6 +8,9 @@
 	<!-- Set params -->
 	<!-- node name="dynamic_reconfigure_load" pkg="dynamic_reconfigure" type="dynparam" args="load lane_detector $(find lane_detector)/cfg/lane_detector_params.yaml" / -->
 
+	<!-- Set static tf transformations -->
+	<node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 map odom 10"/>
+
 	<node pkg="car_handler" type="car_handler_node" name="car_handler" />
 
 	<!-- Bring up the Kinect -->
