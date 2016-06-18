@@ -2,6 +2,9 @@
 
 <launch>
 
+	<arg name="dashboard" default="true"/>
+	<arg name="rviz" default="true"/>
+
 	<node pkg="apollo_13" type="lane_follower" name="lane_follower" output="screen"/>
 	<node pkg="lane_detector" type="lane_detector" name="lane_detector" output="screen" launch-prefix="xterm -e gdb --args"/>
 
@@ -38,4 +41,13 @@
 		<node pkg="image_view" type="image_view" name="image_viewer">
 			<remap from="image" to="/lane_detector/result"/>
 		</node>
+
+		<group if="$(arg rviz)">
+			<node pkg="rviz" type="rviz" name="rviz" args="-d $(find simulation)/data/viewer/viewer.rviz"/>
+		</group>
+
+		<group if="$(arg dashboard)">
+			<node pkg="simulation" type="dashboard_node" name="dashboard_simulation" output="screen"/>
+		</group>
+
 </launch>
