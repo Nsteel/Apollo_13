@@ -11,7 +11,9 @@
 	<!-- Set static tf transformations -->
 	<node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 map odom 10"/>
 
+	<!-- Bring up the car -->
 	<node pkg="car_handler" type="car_handler_node" name="car_handler" />
+	<node pkg="car_handler" type="car_arduino" name="car_arduino" output="screen" />
 
 	<!-- Bring up the Kinect -->
 	<include file="$(find apollo_13)/launch/freenect.launch" />
