@@ -9,8 +9,28 @@
 	<node name="dynamic_reconfigure_load" pkg="dynamic_reconfigure" type="dynparam" args="load lane_detector $(find lane_detector)/cfg/lane_detector_params.yaml" />
 
 	<node pkg="car_handler" type="car_handler_node" name="car_handler" />
-	
+
 	<!-- Bring up the Kinect -->
 	<include file="$(find apollo_13)/launch/freenect.launch" />
 	<node name="kinect_throttler" type="throttle" pkg="topic_tools" args="messages /camera/rgb/image_rect_mono 30 /kinect_mono_throttled" />
+
+	<!-- Run the navigation stack -->
+		<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen" >
+
+			<!-- Planners -->
+			<!-- param name="base_local_planner" value="pose_follower/PoseFollower" / -->
+			<param name="base_global_planner" value="global_planner/GlobalPlanner" />
+			<param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+			<!-- Costmap parameters -->
+			<rosparam file="$(find apollo_13)/config/costmap_common_params_simulation.yaml" command="load" ns="global_costmap"/>
+			<rosparam file="$(find apollo_13)/config/costmap_common_params_simulation.yaml" command="load" ns="local_costmap"/>
+			<rosparam file="$(find apollo_13)/config/local_costmap_params.yaml" command="load"/>
+			<rosparam file="$(find  apollo_13)/config/global_costmap_params_simulation.yaml" command="load"/>
+			<!-- rosparam file="$(find  apollo_13)/config/poseFollower_params.yaml" command="load"/ -->
+			<rosparam file="$(find  apollo_13)/config/teb_local_planner_lane_follower_params.yaml" command="load"/>
+		</node>
+		
+		<node pkg="image_view" type="image_view" name="image_viewer">
+			<remap from="image" to="/lane_detector/result"/>
+		</node>
 </launch>
