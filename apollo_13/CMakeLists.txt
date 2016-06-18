@@ -18,7 +18,6 @@ find_package(catkin REQUIRED COMPONENTS
   car_handler
   image_transport
   cv_bridge
-  carrot_planner
 )
 find_package(OpenCV 2 REQUIRED)
 
