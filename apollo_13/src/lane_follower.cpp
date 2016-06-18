@@ -19,7 +19,6 @@
 #include <actionlib/client/simple_action_client.h>
 #include <tf/transform_listener.h>
 #include <costmap_2d/costmap_2d_ros.h>
-#include <carrot_planner/carrot_planner.h>
 #include <actionlib/client/simple_client_goal_state.h>
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
@@ -45,7 +44,7 @@ MoveBaseClient* ac;
 void vanishingPointCB(const geometry_msgs::PointStampedConstPtr& vp) {
   if(ac->getState() != actionlib::SimpleClientGoalState::ACTIVE) {
     ROS_INFO("State: %s",ac->getState().toString().c_str());
-    float x = 0.4;
+    float x = 1.0;
     float y = x*cvRound(640/2 - vp->point.x)/FOCAL_LENGTH;
     //float w = std::atan2(y,x);
     float w = std::atan2(vp->point.y, vp->point.x);
@@ -101,12 +100,6 @@ int main(int argc, char **argv){
      while(!ac->waitForServer(ros::Duration(5.0))){
        ROS_INFO("Waiting for the move_base action server to come up");
      }
-
-     tf::TransformListener tf(ros::Duration(10));
-     costmap_2d::Costmap2DROS costmap("my_costmap", tf);
-
-     carrot_planner::CarrotPlanner cp;
-     cp.initialize("my_carrot_planner", &costmap);
 
      ros::spin();
 
