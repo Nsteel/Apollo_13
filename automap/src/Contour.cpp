@@ -20,6 +20,7 @@ void Contour::initContour(){
 								calcCentroid();
 								calcMidEdge();
 								calcDirectionToUnknown();
+								shiftCentroid();
 }
 const edge& Contour::getContour(){
 								return vectorOfPoints;
@@ -28,8 +29,10 @@ const edge& Contour::getContour(){
 void Contour::setScore(const cv::Point& vehicle, const double& yaw, const cv::Rect& roi){
 								cv::Point adjustedVehicle(vehicle.x-roi.x, vehicle.y-roi.y);
 								double distance = cv::norm(adjustedVehicle-centroid);
-								double dYaw = std::fabs(yaw-this->yaw);
-								score = (180-dYaw)*(180-dYaw) * (1/ (1+distance)) *  length;
+								double dYaw = 180-std::fabs(makeYaw(yaw-this->yaw));
+								//score = (180-dYaw)*(180-dYaw)* (1/ (1+distance)) *  length;
+								//score = (180-dYaw)*(180-dYaw)*  length;
+								score =dYaw +  dYaw*(1/ (1+(distance))) + dYaw*(length * 0.05);
 }
 const double Contour::getScore() const {
 								return score;
@@ -37,6 +40,10 @@ const double Contour::getScore() const {
 
 const cv::Point& Contour::getCentroid() const {
 								return centroid;
+}
+
+const cv::Point Contour::getCentroidGlobal(const cv::Rect& roi) const {
+								return cv::Point(centroid.x+roi.x, centroid.y+roi.y);
 }
 
 const double Contour::getYaw() const {
@@ -49,6 +56,32 @@ const cv::Point& Contour::getMid() const {
 
 const double Contour::getLength() const {
 								return length;
+}
+
+void Contour::shiftCentroid(){
+	/*
+	int col = map.at<uchar>(centroid);
+
+	double length = 1;
+	int c = 0;
+	cv::Point P2;
+
+	while(col != 255 && c<30){
+		double temp_yaw = correctYawAngle(yaw, 180);
+		centroid.x =  (int)round(centroid.x + length * cv::cos((-temp_yaw) * CV_PI / 180.0));
+		centroid.y =  (int)round(centroid.y + length * cv::sin((-temp_yaw) * CV_PI / 180.0));
+		col = map.at<uchar>(centroid);
+		length+=1.0;
+		c++;
+	}
+	*/
+
+	double temp_yaw = correctYawAngle(yaw, 180);
+	centroid.x =  (int)round(centroid.x + 0.4/0.05 * cv::cos((-temp_yaw) * CV_PI / 180.0));
+	centroid.y =  (int)round(centroid.y + 0.4/0.05 * cv::sin((-temp_yaw) * CV_PI / 180.0));
+
+
+
 }
 
 void Contour::calcCentroid(){

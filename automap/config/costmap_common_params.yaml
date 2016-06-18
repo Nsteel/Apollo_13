@@ -1,7 +1,8 @@
 
 transform_tolerance: 0.3
 #footprint: [[0.23,-0.165], [-0.23, -0.165], [-0.23, 0.165], [0.23, 0.165]]
-footprint: [[0.20,-0.10], [-0.20, -0.10], [-0.20, 0.10], [0.20, 0.10]]
+#footprint: [[0.20,-0.10], [-0.20, -0.10], [-0.20, 0.10], [0.20, 0.10]]
+footprint: [[-0.325,-0.10], [0.075, -0.10], [0.075, 0.10], [-0.325, 0.10]]
 #robot_radius: ir_of_robot
 
 max_obstacle_height: 0.40  # assume something like an arm is mounted on top of the robot
@@ -33,7 +34,7 @@ obstacle_layer:
 #cost_scaling_factor and inflation_radius were now moved to the inflation_layer ns
 inflation_layer:
   enabled:              true
-  inflation_radius:     0.40  # max. distance from an obstacle at which costs are incurred for planning paths.
+  inflation_radius:     0.15  # max. distance from an obstacle at which costs are incurred for planning paths.
 
 static_layer:
   enabled:              true

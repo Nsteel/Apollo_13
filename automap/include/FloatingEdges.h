@@ -19,7 +19,7 @@ typedef std::vector< std::vector<cv::Point> > contVector;
 class FloatingEdges {
 public:
 								FloatingEdges(const double vehicleWidth, const double mapResolution);
-								void getEdges(const cv::Mat& map, const cv::Point& vehicle, const double& yaw, const cv::Rect& roi);
+								const contours& getEdges(const cv::Mat& map, const cv::Point& vehicle, const double& yaw, const cv::Rect& roi);
 								cv::Mat drawEdges();
 
 private:

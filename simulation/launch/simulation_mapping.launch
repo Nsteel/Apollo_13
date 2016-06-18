@@ -23,7 +23,7 @@
   <!-- Run the mapping -->
   <group if="$(arg gmapper)">
     <!-- <include file="$(find simulation)/launch/amcl.launch"/> -->
-  	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
+  	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping">
 	    <param name="scan" value="scan" />
       <param name="maxUrange" value="5.5" />
       <param name="maxRange" value="6.0" />
@@ -44,19 +44,23 @@
 		<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
 
 			<!-- Planners -->
-			<param name="base_global_planner" value="SBPLLatticePlanner"/>
-			<param name="base_local_planner" value="pose_follower/PoseFollower"/>
-
-			<!-- Motion primitives file -->
-			<param name="SBPLLatticePlanner/primitive_filename" value="$(find simulation)/data/motion_primitives/apollo_13_motion_primitives.mprim"/>
+			<!-- <param name="base_global_planner" value="SBPLLatticePlanner"/> -->
+				<!-- Motion primitives file -->
+			<!-- <param name="SBPLLatticePlanner/primitive_filename" value="$(find simulation)/data/motion_primitives/apollo_13_motion_primitives.mprim"/> -->
+			<param name="base_global_planner" value="global_planner/GlobalPlanner"/>
+			<param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS"/>
+			<rosparam file="$(find automap)/config/teb_local_planner_params.yaml" command="load"/>
+		  <!-- <param name="base_local_planner" value="pose_follower/PoseFollower"/> -->
+			<!-- <rosparam file="$(find automap)/config/base_local_planner_params.yaml" command="load"/> -->
 
 			<!-- Costmap parameters -->
 			<rosparam file="$(find automap)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
-			<rosparam file="$(find automap)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+			<rosparam file="$(find automap)/config/costmap_common_local_params.yaml" command="load" ns="local_costmap"/>
 			<rosparam file="$(find automap)/config/local_costmap_params.yaml" command="load"/>
 			<rosparam file="$(find automap)/config/global_costmap_params.yaml" command="load"/>
-			<rosparam file="$(find automap)/config/sbpl_global_params.yaml" command="load"/>
-			<rosparam file="$(find automap)/config/base_local_planner_params.yaml" command="load"/>
+			<!--<rosparam file="$(find automap)/config/sbpl_global_params.yaml" command="load"/>-->
+			<param name="clearing_rotation_allowed" value="false" />
+
 
 		</node>
 	</group>

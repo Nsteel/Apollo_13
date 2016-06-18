@@ -22,6 +22,8 @@ public:
 								const double getScore() const;
 								const edge& getContour();
 								const cv::Point& getCentroid() const;
+								void shiftCentroid();
+								const cv::Point getCentroidGlobal(const cv::Rect& roi) const;
 								const double getYaw() const;
 								const cv::Point& getMid() const;
 								const double getLength() const;
