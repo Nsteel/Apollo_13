@@ -18,6 +18,7 @@
 
 	<!-- Set static tf transformations -->
 	<node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 map odom 10"/>
+	<node pkg="tf" type="static_transform_publisher" name="base_footprint_broadcaster" args="0 0 0.10 0 0 0 base_footprint base_link 10"/>
 	<node pkg="tf" type="static_transform_publisher" name="base_laser_broadcaster" args="0.18 0 0.34 0 0 0 1 base_link base_laser 10" />
 	<node pkg="tf" type="static_transform_publisher" name="front_us_broadcaster" args="0.175 0 -0.06 0 0 0 1 base_link front_sensor 10" />
 	<node pkg="tf" type="static_transform_publisher" name="left_us_broadcaster" args="0 0.1 -0.06 1.57 0 0 base_link left_sensor 10" />
@@ -34,12 +35,6 @@
 	<!-- Bring up the Kinect -->
 	<include file="$(find apollo_13)/launch/freenect.launch" />
 	<node name="kinect_throttler" type="throttle" pkg="topic_tools" args="messages /camera/rgb/image_rect_mono 30 /kinect_mono_throttled" />
-
-	<!-- Convert the kinect point cloud to a laserscan message -->
-	<node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan">
-		<remap from="image" to="/camera/depth/image_raw" />
-		<param name="output_frame_id" value="base_laser" />
-	</node>
 
 	<!-- Run the navigation stack -->
 		<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen" >
