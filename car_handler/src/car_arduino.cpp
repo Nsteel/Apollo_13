@@ -82,12 +82,20 @@ void setMotorAndSteering(std_msgs::Int32& motorLevel, std_msgs::Int32& steeringL
 	if(ctrlData.size()>1){
 
 		if(ctrlData[0]>0){
-			// rotary encoder is broken, do not go higher than level 2 or the odometry will be off
-	    motorLevel.data = 2;
+			if(ctrlData[0] < 0.15) {
+	    	motorLevel.data = 1;
+			}
+			else if(ctrlData[0] < 0.28) {
+				motorLevel.data = 2;
+			}
+			// rotary encoder is broken, do not go higher than level 3 or the odometry will be off (Max speed: 0.35 m/s)
+			else motorLevel.data = 3;
 	  }
 		else if(ctrlData[0] < 0){
-			// rotary encoder is broken, do not go lower than level -3 or the odometry will be off
-	    motorLevel.data = -3;
+			if(ctrlData[0] > -0.15)
+				motorLevel.data = -3;
+			// rotary encoder is broken, do not go lower than level -4 or the odometry will be off (Max speed: -0.35 m/s)
+			else motorLevel.data = -4;
 	  }
 		else {
 			motorLevel.data = 0;
@@ -239,7 +247,7 @@ int main(int argc, char **argv)
 
 		// publish the message
     odom_pub.publish(odom);
-		
+
 		// publish steering values
 		setMotorAndSteering(motorValue, steeringValue);
 		sbplMotor_pub.publish(motorValue);
