@@ -20,12 +20,16 @@
 #include <tf/transform_listener.h>
 #include <costmap_2d/costmap_2d_ros.h>
 #include <actionlib/client/simple_client_goal_state.h>
+#include <geometry_msgs/PolygonStamped.h>
+#include <teb_local_planner/ObstacleMsg.h>
+
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 #define FOCAL_LENGTH 335.906
 
 //cv_bridge::CvImageConstPtr currentFrame_ptr;
 MoveBaseClient* ac;
+ros::Publisher obstacles_pub;
 
 /*{
 
@@ -41,20 +45,46 @@ MoveBaseClient* ac;
 
 }*/
 
-void vanishingPointCB(const geometry_msgs::PointStampedConstPtr& vp) {
+void detectedPointsCB(const geometry_msgs::PolygonStampedConstPtr& detectedPoints) {
+
+  //Vanishing Point with real world coordinates in meters
+  float vp_x = 1.0; //Asumming the vanishing point to be one meter in front of the car
+  float vp_y = vp_x*cvRound(640/2 - detectedPoints->polygon.points[0].x)/FOCAL_LENGTH;
+
+  teb_local_planner::ObstacleMsg obstacle_msg;
+  obstacle_msg.header.stamp = ros::Time::now();
+  obstacle_msg.header.frame_id = "base_footprint";
+  geometry_msgs::Point32 line_start;
+  geometry_msgs::Point32 line_end;
+
+  //Left lane added as obstacle
+  obstacle_msg.obstacles.push_back(geometry_msgs::PolygonStamped());
+  line_start.x = 0;
+  line_start.y = 0.19; //detectedPoints->polygon.points[1].y;
+  line_end.x = vp_x;
+  line_end.y = vp_y;
+  obstacle_msg.obstacles[0].polygon.points = {line_start, line_end};
+
+  //right lane added as obstacle
+  obstacle_msg.obstacles.push_back(geometry_msgs::PolygonStamped());
+  line_start.x = 0;
+  line_start.y = -0.19;//detectedPoints->polygon.points[2].y;
+  line_end.x = vp_x;
+  line_end.y = vp_y;
+  obstacle_msg.obstacles[1].polygon.points = {line_start, line_end};
+  obstacles_pub.publish(obstacle_msg);
+
   if(ac->getState() != actionlib::SimpleClientGoalState::ACTIVE) {
     ROS_INFO("State: %s",ac->getState().toString().c_str());
-    float x = 1.0;
-    float y = x*cvRound(640/2 - vp->point.x)/FOCAL_LENGTH;
     //float w = std::atan2(y,x);
-    float w = std::atan2(vp->point.y, vp->point.x);
+    float w = std::atan2(detectedPoints->polygon.points[0].y, detectedPoints->polygon.points[0].x);
     move_base_msgs::MoveBaseGoal goal;
     goal.target_pose.header.frame_id = "base_link";
     goal.target_pose.header.stamp = ros::Time::now();
-    goal.target_pose.pose.position.x = x;
-    goal.target_pose.pose.position.y = y;
+    goal.target_pose.pose.position.x = vp_x;
+    goal.target_pose.pose.position.y = vp_y;
     goal.target_pose.pose.orientation.w = w;
-    ROS_INFO("x:%f, y:%f, w:%f", x, y, 180*w/CV_PI);
+    ROS_INFO("x:%f, y:%f, w:%f", vp_x, vp_y, 180*w/CV_PI);
     ac->sendGoal(goal);
   }
   ROS_INFO("State: %s",ac->getState().toString().c_str());
@@ -93,7 +123,8 @@ int main(int argc, char **argv){
 	   */
 
      //image_transport::Subscriber pointCloud_sub = it.subscribe("camera/depth/image_raw", 1, readPointCloud);
-     ros::Subscriber vanishingPoint_sub = nh.subscribe("lane_detector/vanishing_point", 1, vanishingPointCB);
+     ros::Subscriber detectedPoints_sub = nh.subscribe("lane_detector/vanishing_point", 1, detectedPointsCB);
+     obstacles_pub = nh.advertise<teb_local_planner::ObstacleMsg>("/obstacles", 1);
      ac = new MoveBaseClient("move_base", true);
 
      //wait for the action server to come up
