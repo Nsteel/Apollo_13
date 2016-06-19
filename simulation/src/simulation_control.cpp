@@ -37,7 +37,7 @@ int main(int argc, char **argv){
         control = simulation::ctrl_msg();
         simulation::telemetry_msg telemetry;
         tf::TransformBroadcaster odom_broadcaster;
-        sbplFlag = 0;
+        sbplFlag = 1;
 
         ros::Subscriber motionControl = nh.subscribe<geometry_msgs::Twist>("cmd_vel", 10, motionCommands);
         ros::Subscriber steeringControl = nh.subscribe<simulation::ctrl_msg>("robot_control", 10, controlCommands);
@@ -91,6 +91,7 @@ int main(int argc, char **argv){
                 telemetry.steering = car.getSteering();
                 //telemetry.speed = car.getSpeed();
                 telemetry.steering_angle = car.getSteeringAngle();
+                telemetry.radial_distance = car.getDistance();
                 telemetry.v_radial = car.getVelocity();
                 telemetry.v_linear.x=car.getVelocity()*std::cos(simPose[2]);
                 telemetry.v_linear.y=car.getVelocity()*std::sin(simPose[2]);

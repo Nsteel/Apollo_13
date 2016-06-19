@@ -43,6 +43,7 @@ public:
 								const double getSteeringAngle() const;
 								const double getVelocity() const;
 								const double getAngularVelocity() const;
+								const double getDistance() const;
 private:
 								ForwardKinematics fwdKin;
 								ros::Time lastUpdate;
