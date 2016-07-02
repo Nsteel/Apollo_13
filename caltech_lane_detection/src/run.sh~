@@ -1,0 +1,21 @@
+# This file runs the lane detection binary on the four clips available
+# in the dataset
+
+# Author: Mohamed Aly <malaa@caltech.edu>
+# Date: 10/7/2010
+
+#clips to run
+path=`rospack find lane_detector`
+clean="make clean"
+compile="make release"
+command="gcc -shared -o libLaneDetector.so CameraInfoOpt.o LaneDetectorOpt.o LaneDetector.o InversePerspectiveMapping.o mcv.o"
+copy_library="cp libLaneDetector.so $path/lib/"
+copy_headers="cp *.h $path/include/lane_detector/"
+
+$clean
+$compile
+$command
+$copy_library
+$copy_headers
+cd ~/catkin_ws
+catkin_make
