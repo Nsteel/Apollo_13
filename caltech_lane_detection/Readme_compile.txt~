@@ -1,2 +1,1 @@
-make release
-gcc -shared -o libLaneDetector.so CameraInfoOpt.o LaneDetectorOpt.o LaneDetector.o InversePerspectiveMapping.o mcv.o
+#To compile run the script ./run.sh

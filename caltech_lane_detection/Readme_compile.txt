@@ -1,1 +1,1 @@
-#To compile run the script ./run.sh
+#To compile run the script ./compile.sh

@@ -1469,17 +1469,17 @@ void mcvGetStopLines(const CvMat *inImage, vector<Line> *stopLines,
  *
  *
  */
-void mcvGetLanes(const CvMat *inImage, const CvMat* clrImage,
+void mcvGetLanes(CvMat **inImage, CvMat* clrImage,
                  vector<Line> *lanes, vector<FLOAT> *lineScores,
                  vector<Spline> *splines, vector<Spline>* splines_world, vector<float> *splineScores,
                  CameraInfo *cameraInfo, LaneDetectorConf *stopLineConf,
                  LineState* state)
 {
   //input size
-  CvSize inSize = cvSize(inImage->width, inImage->height);
+  CvSize inSize = cvSize((*inImage)->width, (*inImage)->height);
 
   //TODO: smooth image
-  CvMat *image = cvCloneMat(inImage);
+  CvMat *image = cvCloneMat(*inImage);
   //cvSmooth(image, image, CV_GAUSSIAN, 5, 5, 1, 1);
 
   //SHOW_IMAGE(image, "Input image", 10);
@@ -1510,7 +1510,7 @@ void mcvGetLanes(const CvMat *inImage, const CvMat* clrImage,
   CvSize ipmSize = cvSize((int)stopLineConf->ipmWidth,
       (int)stopLineConf->ipmHeight);
   CvMat * ipm;
-  ipm = cvCreateMat(ipmSize.height, ipmSize.width, inImage->type);
+  ipm = cvCreateMat(ipmSize.height, ipmSize.width, (*inImage)->type);
   //mcvGetIPM(inImage, ipm, &ipmInfo, cameraInfo);
   ipmInfo.vpPortion = stopLineConf->ipmVpPortion;
   ipmInfo.ipmLeft = stopLineConf->ipmLeft;
@@ -1670,11 +1670,20 @@ void mcvGetLanes(const CvMat *inImage, const CvMat* clrImage,
 	    SHOW_IMAGE(dbIpmImageThresholded, str, 10);
 	    cvReleaseMat(&dbIpmImageThresholded);
     }
-
+      //cvThreshold(subimage, subimage, 0, 1, CV_THRESH_BINARY);
+      cvReleaseMat(inImage);
+      *inImage = subimage;
     //get the lines/splines
     mcvGetLines(subimage, LINE_VERTICAL, subimageLines, subimageLineScores,
 		    subimageSplines, subimageSplineScores, stopLineConf,
 		    state);
+        for(unsigned int ind = 0; ind < subimageLineScores.size(); ind++)
+        {
+          subimageLines[ind].score = subimageLineScores[ind];
+        }
+      *lanes = subimageLines;
+    }
+    /*
 // 	mcvGetLines(ipm, LINE_VERTICAL, *lanes, *lineScores,
 // 		    *splines, *splineScores, stopLineConf,
 // 		    state);
@@ -1768,9 +1777,9 @@ void mcvGetLanes(const CvMat *inImage, const CvMat* clrImage,
     dbIpmStopLines.clear();
     dbIpmSplines.clear();
   }//#endif //DEBUG_GET_STOP_LINES
-
+*/
   //clear
-  cvReleaseMat(&ipm);
+  //cvReleaseMat(&ipm);
   cvReleaseMat(&image);
   cvReleaseMat(&fipm);
   cvReleaseMat(&rawipm);
@@ -4063,8 +4072,8 @@ void mcvGetRansacLines(const CvMat *im, vector<Line> &lines,
     oldLines = lines;
   lines.clear();
   lineScores.clear();
-  #warning "not grouping at end of getRansacLines"
-  //mcvGroupLines(newLines, newScores, lineConf->groupThreshold, cvSize(width, height));
+  //#warning "not grouping at end of getRansacLines"
+  mcvGroupLines(newLines, newScores, lineConf->groupThreshold, cvSize(width, height));
   lines = newLines;
   lineScores = newScores;
 
@@ -7177,6 +7186,58 @@ void mcvGetSplinesBoundingBoxes(const vector<Spline> &splines, LineType type,
       }
       break;
   }
+}
+
+/** \brief This function extracts bounding boxes from lines including
+ * \ the slope type of the line inside it
+ * \param lines vector of lines
+ * \param type the type of lines (LINE_HORIZONTAL or LINE_VERTICAL)
+ * \param size the size of image containing the lines
+ * \param boxes a vector of output bounding boxes
+ */
+void mcvGetLinesBoundingBoxesWithSlope(const vector<Line> &lines, LineType type,
+                              CvSize size, vector<Box> &boxes)
+{
+  //copy lines to boxes
+  int start, end;
+  SlopeType slopetype;
+  //clear
+  boxes.clear();
+  switch(type)
+  {
+    case LINE_VERTICAL:
+      for(unsigned int i=0; i<lines.size(); ++i)
+      {
+        //get min and max x and add the bounding box covering the whole height
+        //get whether the corresponding line is turning right or not
+
+        //start = (int)fmin(lines[i].startPoint.x, lines[i].endPoint.x);
+        if(lines[i].startPoint.x < lines[i].endPoint.x) {
+          start = (int)lines[i].startPoint.x;
+          end = (int)lines[i].endPoint.x;
+          slopetype = (lines[i].endPoint.y - lines[i].startPoint.y) < 0? SLOPE_INCREASING : SLOPE_DECREASING;
+        }
+        else {
+          start = (int)lines[i].endPoint.x;
+          end = (int)lines[i].startPoint.x;
+          slopetype = (lines[i].startPoint.y - lines[i].endPoint.y) < 0? SLOPE_INCREASING : SLOPE_DECREASING;
+        }
+        //end = (int)fmax(lines[i].startPoint.x, lines[i].endPoint.x);
+        boxes.push_back(Box {cvRect(start, 0, end-start+1, size.height-1), slopetype});
+      }
+      break;
+
+    //TODO implementation for horizontal lines
+    case LINE_HORIZONTAL:
+      /*for(unsigned int i=0; i<lines.size(); ++i)
+      {
+        //get min and max y and add the bounding box covering the whole width
+  	    start = (int)fmin(lines[i].startPoint.y, lines[i].endPoint.y);
+        end = (int)fmax(lines[i].startPoint.y, lines[i].endPoint.y);
+        boxes.push_back(cvRect(0, start, size.width-1, end-start+1));
+      }*/
+      break;
+    }
 }
 
 /** \brief This function extracts bounding boxes from lines
