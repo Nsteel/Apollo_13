@@ -514,9 +514,9 @@ void mcvPreprocess(CvMat **inImage,
 //     cvReleaseMat(&ipmt);
 
   //filter the IPM image
-  mcvFilterLines(ipm, ipm, lanesConf->kernelWidth,
+  /*mcvFilterLines(ipm, ipm, lanesConf->kernelWidth,
                  lanesConf->kernelHeight, sigmax, sigmay,
-                 LINE_VERTICAL);
+                 LINE_VERTICAL);*/
 //     mcvFilterLines(ipm, ipm, lanesConf->kernelWidth,
 // 		   lanesConf->kernelHeight, sigmax, sigmay,
 // 		   LINE_VERTICAL);
@@ -4117,6 +4117,101 @@ void mcvGroupBoundingBoxes(vector<CvRect> &boxes, LineType type,
   } //while
 }
 
+/** \brief This function groups together bounding boxes (with the line inside it)
+ *
+ * \param size the size of image containing the lines
+ * \param boxes a vector of output grouped bounding boxes
+ * \param type the type of lines (LINE_HORIZONTAL or LINE_VERTICAL)
+ * \param groupThreshold the threshold used for grouping (ratio of overlap)
+ */
+void mcvGroupBoundingBoxesVec(vector<Box> &boxes, LineType type,
+                           float groupThreshold)
+{
+  bool cont = true;
+
+  //Todo: check if to intersect with bounding box or not
+
+  //save boxes
+  //vector<CvRect> tboxes = boxes;
+
+  //loop to get the largest overlap (according to type) and check
+  //the overlap ratio
+  float overlap, maxOverlap;
+  while(cont)
+  {
+    maxOverlap =  overlap = -1e5;
+    //loop on lines and get max overlap
+    vector<Box>::iterator i, j, maxI, maxJ;
+    for(i = boxes.begin(); i != boxes.end(); i++)
+    {
+      for(j = i+1; j != boxes.end(); j++)
+      {
+        switch(type)
+        {
+          case LINE_VERTICAL:
+            //get one with smallest x, and compute the x2 - x1 / width of smallest
+            //i.e. (x12 - x21) / (x22 - x21)
+            overlap = i->box.x < j->box.x  ?
+            (i->box.x + i->box.width - j->box.x) / (float)j->box.width :
+            (j->box.x + j->box.width - i->box.x) / (float)i->box.width;
+
+            break;
+
+          case LINE_HORIZONTAL:
+            //get one with smallest y, and compute the y2 - y1 / height of smallest
+            //i.e. (y12 - y21) / (y22 - y21)
+            overlap = i->box.y < j->box.y  ?
+            (i->box.y + i->box.height - j->box.y) / (float)j->box.height :
+            (j->box.y + j->box.height - i->box.y) / (float)i->box.height;
+
+            break;
+
+        } //switch
+
+        //get maximum
+        if(overlap > maxOverlap)
+        {
+          maxI = i;
+          maxJ = j;
+          maxOverlap = overlap;
+        }
+      } //for j
+    } // for i
+    // 	//debug
+    // 	if(DEBUG_LINES) {
+    // 	    cout << "maxOverlap=" << maxOverlap << endl;
+    // 	    cout << "Before grouping\n";
+    // 	    for(unsigned int k=0; k<boxes.size(); ++k)
+    // 		SHOW_RECT(boxes[k]);
+    // 	}
+
+    //now check the max overlap found against the threshold
+    if (maxOverlap >= groupThreshold)
+    {
+      //Take the line with best score
+      Line lin = (*maxI).line.score > (*maxJ).line.score ? (*maxI).line : (*maxJ).line;
+      //combine the two boxes
+      *maxI  = Box{cvRect(min((*maxI).box.x, (*maxJ).box.x),
+                      min((*maxI).box.y, (*maxJ).box.y),
+                      max((*maxI).box.width, (*maxJ).box.width),
+                      max((*maxI).box.height, (*maxJ).box.height)), lin};
+                      //delete the second one
+                      boxes.erase(maxJ);
+    }
+    else
+      //stop
+      cont = false;
+
+    // 	//debug
+    // 	if(DEBUG_LINES) {
+    // 	    cout << "After grouping\n";
+    // 	    for(unsigned int k=0; k<boxes.size(); ++k)
+    // 		SHOW_RECT(boxes[k]);
+    // 	}
+  } //while
+}
+
+
 /** This function performs a RANSAC validation step on the detected lines
  *
  * \param image the input image
@@ -7434,19 +7529,18 @@ void mcvGetSplinesBoundingBoxes(const vector<Spline> &splines, LineType type,
   }
 }
 
-/** \brief This function extracts bounding boxes from lines including
- * \ the slope type of the line inside it
+/** \brief This function extracts bounding boxes including the line inside it
  * \param lines vector of lines
  * \param type the type of lines (LINE_HORIZONTAL or LINE_VERTICAL)
  * \param size the size of image containing the lines
  * \param boxes a vector of output bounding boxes
  */
-void mcvGetLinesBoundingBoxesWithSlope(const vector<Line> &lines, LineType type,
+void mcvGetLinesBoundingBoxesVec(vector<Line> &lines, LineType type,
                               CvSize size, vector<Box> &boxes)
 {
   //copy lines to boxes
   int start, end;
-  SlopeType slopetype;
+  SlopeType slopeType;
   //clear
   boxes.clear();
   switch(type)
@@ -7461,15 +7555,16 @@ void mcvGetLinesBoundingBoxesWithSlope(const vector<Line> &lines, LineType type,
         if(lines[i].startPoint.x < lines[i].endPoint.x) {
           start = (int)lines[i].startPoint.x;
           end = (int)lines[i].endPoint.x;
-          slopetype = (lines[i].endPoint.y - lines[i].startPoint.y) < 0? SLOPE_INCREASING : SLOPE_DECREASING;
+          slopeType = (lines[i].endPoint.y - lines[i].startPoint.y) < 0? SLOPE_INCREASING : SLOPE_DECREASING;
         }
         else {
           start = (int)lines[i].endPoint.x;
           end = (int)lines[i].startPoint.x;
-          slopetype = (lines[i].startPoint.y - lines[i].endPoint.y) < 0? SLOPE_INCREASING : SLOPE_DECREASING;
+          slopeType = (lines[i].startPoint.y - lines[i].endPoint.y) < 0? SLOPE_INCREASING : SLOPE_DECREASING;
         }
+        lines[i].slope_type = slopeType;
         //end = (int)fmax(lines[i].startPoint.x, lines[i].endPoint.x);
-        boxes.push_back(Box {cvRect(start, 0, end-start+1, size.height-1), slopetype});
+        boxes.push_back(Box {cvRect(start, 0, end-start+1, size.height-1), lines[i]});
       }
       break;
 
