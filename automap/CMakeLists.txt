@@ -5,7 +5,6 @@ project(automap)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  OpenCV
   message_generation
   nav_msgs
   roscpp
@@ -15,9 +14,10 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   cv_bridge
   image_transport
-  #PCL REQUIRED
   rospack
 )
+find_package(PCL REQUIRED)
+find_package(OpenCV REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -124,6 +124,9 @@ catkin_package(
 include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
+
 )
 
 ## Declare a C++ library
@@ -153,7 +156,7 @@ target_link_libraries(PATH ${catkin_LIBRARIES})
 target_link_libraries(FRONTIER ${catkin_LIBRARIES} PATH)
 target_link_libraries(PLANNER ${catkin_LIBRARIES} PATH P_EX)
 target_link_libraries(E_PLANNER ${catkin_LIBRARIES} PLANNER F_DETECTOR PATH FRONTIER)
-target_link_libraries(GLOBAL_PLANNER ${catkin_LIBRARIES} PLANNER )
+target_link_libraries(GLOBAL_PLANNER ${catkin_LIBRARIES} ${PCL_LIBRARIES} PLANNER )
 target_link_libraries(automap_node ${catkin_LIBRARIES} E_PLANNER PLANNER yaml-cpp)
 
 #############
