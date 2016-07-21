@@ -84,8 +84,8 @@ set( QT_USE_QTXML TRUE )
 ## Generate added messages and services with any dependencies listed here
  generate_messages(
    DEPENDENCIES
-  std_msgs
-  geometry_msgs
+   std_msgs
+   geometry_msgs
  )
 
 ################################################
@@ -141,7 +141,7 @@ QT5_WRAP_UI(UIS_HDRS include/Dashboard.ui)
 #   src/${PROJECT_NAME}/src/simulation_control.cpp
 # )
 add_library(CAR_MODEL src/CarModel.cpp)
-add_library(FWD_KIN src/ForwardKinematics.cpp)
+add_library(FWD_KINEMATICS src/ForwardKinematics.cpp)
 add_library(RAY_CAST src/Raycaster.cpp)
 add_library(DASH include/Dashboard.cpp ${UIS_HDRS})
 
@@ -166,7 +166,7 @@ add_dependencies(simulation_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(simulation_node
-   ${catkin_LIBRARIES} CAR_MODEL FWD_KIN
+   ${catkin_LIBRARIES} CAR_MODEL FWD_KINEMATICS
  )
  target_link_libraries(scan_node
    ${catkin_LIBRARIES} ${OpenCV_LIBS} RAY_CAST yaml-cpp

@@ -1,7 +1,8 @@
 
 transform_tolerance: 0.3
 #footprint: [[0.23,-0.165], [-0.23, -0.165], [-0.23, 0.165], [0.23, 0.165]]
-footprint: [[0.20,-0.10], [-0.20, -0.10], [-0.20, 0.10], [0.20, 0.10]]
+#footprint: [[0.20,-0.10], [-0.20, -0.10], [-0.20, 0.10], [0.20, 0.10]]
+footprint: [[-0.325,-0.10], [0.075, -0.10], [0.075, 0.10], [-0.325, 0.10]]
 #robot_radius: ir_of_robot
 
 max_obstacle_height: 0.40  # assume something like an arm is mounted on top of the robot

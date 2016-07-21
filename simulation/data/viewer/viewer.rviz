@@ -27,7 +27,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -75,7 +75,6 @@ Visualization Manager:
       Size (m): 0.01
       Style: Points
       Topic: /scan
-      Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -97,7 +96,6 @@ Visualization Manager:
       Name: Range
       Queue Size: 10
       Topic: /front_us_range
-      Unreliable: false
       Value: true
     - Alpha: 0.1
       Buffer Length: 10
@@ -107,7 +105,6 @@ Visualization Manager:
       Name: Range
       Queue Size: 10
       Topic: /left_us_range
-      Unreliable: false
       Value: true
     - Alpha: 0.1
       Buffer Length: 10
@@ -117,7 +114,6 @@ Visualization Manager:
       Name: Range
       Queue Size: 10
       Topic: /right_us_range
-      Unreliable: false
       Value: true
     - Alpha: 1
       Class: rviz/RobotModel
@@ -216,7 +212,6 @@ Visualization Manager:
       Shaft Radius: 0.05
       Shape: Arrow
       Topic: /move_base/current_goal
-      Unreliable: false
       Value: true
     - Alpha: 1
       Axes Length: 1
@@ -231,7 +226,6 @@ Visualization Manager:
       Shaft Radius: 0.05
       Shape: Arrow
       Topic: /move_base_simple/goal
-      Unreliable: false
       Value: true
     - Alpha: 1
       Class: rviz/Polygon
@@ -239,7 +233,6 @@ Visualization Manager:
       Enabled: true
       Name: Polygon
       Topic: /move_base/global_costmap/footprint
-      Unreliable: false
       Value: true
     - Alpha: 1
       Buffer Length: 1
@@ -253,8 +246,7 @@ Visualization Manager:
         X: 0
         Y: 0
         Z: 0
-      Topic: /move_base/SBPLLatticePlanner/plan
-      Unreliable: false
+      Topic: /move_base/GlobalPlanner/plan
       Value: true
     - Alpha: 1
       Buffer Length: 1
@@ -268,8 +260,7 @@ Visualization Manager:
         X: 0
         Y: 0
         Z: 0
-      Topic: /move_base/TrajectoryPlannerROS/global_plan
-      Unreliable: false
+      Topic: /move_base/TebLocalPlannerROS/local_plan
       Value: true
     - Alpha: 0.7
       Class: rviz/Map
@@ -278,7 +269,6 @@ Visualization Manager:
       Enabled: true
       Name: Local Costmap
       Topic: /move_base/local_costmap/costmap
-      Unreliable: false
       Value: true
     - Alpha: 0.7
       Class: rviz/Map
@@ -287,7 +277,6 @@ Visualization Manager:
       Enabled: true
       Name: Map
       Topic: /map
-      Unreliable: false
       Value: true
     - Alpha: 0.5
       Class: rviz/Map
@@ -296,16 +285,14 @@ Visualization Manager:
       Enabled: true
       Name: Global Costmap
       Topic: /move_base/global_costmap/costmap
-      Unreliable: false
       Value: true
     - Arrow Length: 0.3
       Class: rviz/PoseArray
       Color: 0; 0; 255
-      Enabled: false
+      Enabled: true
       Name: PoseArray
-      Topic: /particlecloud
-      Unreliable: false
-      Value: false
+      Topic: /move_base/TebLocalPlannerROS/teb_poses
+      Value: true
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.1
@@ -319,16 +306,16 @@ Visualization Manager:
       Shaft Radius: 0.05
       Shape: Axes
       Topic: /ar_multi_boards/pose
-      Unreliable: false
       Value: false
     - Class: rviz/Marker
-      Enabled: false
-      Marker Topic: /car_aruco/rviz_marker
+      Enabled: true
+      Marker Topic: /move_base/TebLocalPlannerROS/teb_markers
       Name: Marker
       Namespaces:
-        {}
+        RobotFootprintModel: true
+        TebContainer: true
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/TF
       Enabled: false
       Frame Timeout: 15

@@ -1,0 +1,16 @@
+global_costmap:
+  global_frame: /map
+  robot_base_frame: /base_link
+  rolling_window: true
+  unknown_cost_value: 1.0
+  update_frequency: 1.0
+  publish_frequency: 0.5
+  static_map: false
+  resolution: 0.2
+  width: 300.0
+  height: 300.0
+
+plugins:
+  - {name: sonar, type: "range_sensor_layer::RangeSensorLayer"}
+  - {name: obstacle_layer,           type: "costmap_2d::VoxelLayer"}
+  - {name: inflation_layer,                 type: "costmap_2d::InflationLayer"}

@@ -1,0 +1,12 @@
+TebLocalPlannerROS:
+  max_vel_x: 0.4
+  max_vel_theta: 0.3
+  max_vel_x_backwards: 0.2
+  wheelbase: 0.25
+  cmd_angle_instead_rotvel: true
+  footprint_model/type: polygon
+  footprint_model/vertices: [[-0.325,-0.10], [0.075, -0.10], [0.075, 0.10], [-0.325, 0.10]]
+  xy_goal_tolerance: 0.2
+  yaw_goal_tolerance: 0.3
+  min_turning_radius: 0.81
+  weight_kinematics_forward_drive: 1000 #Disable backwards driving
