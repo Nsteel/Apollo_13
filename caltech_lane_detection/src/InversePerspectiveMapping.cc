@@ -402,7 +402,7 @@ void mcvPointImIPM2World(FLOAT_POINT2D *point, const IPMInfo *ipmInfo)
 {
   //x-direction
   point->x /= ipmInfo->xScale;
-  point->x = ipmInfo->xLimits[0] - point->x;
+  point->x += ipmInfo->xLimits[0];
   //y-direction
   point->y /= ipmInfo->yScale;
   point->y = ipmInfo->yLimits[1] - point->y;
