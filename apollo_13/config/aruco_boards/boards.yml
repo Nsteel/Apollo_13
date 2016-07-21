@@ -1,0 +1,8 @@
+%YAML:1.0
+ar_sys_boards:
+   - { name:"16", path:"board1.yml", marker_size:0.18}
+   - { name:"13", path:"board2.yml", marker_size:0.18}
+   - { name:"11", path:"board3.yml", marker_size:0.18}
+   - { name:"12", path:"board4.yml", marker_size:0.18}
+   - { name:"10", path:"board5.yml", marker_size:0.18}
+   - { name:"17", path:"board6.yml", marker_size:0.18}

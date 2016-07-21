@@ -16,7 +16,10 @@ find_package(catkin REQUIRED COMPONENTS
   costmap_2d
   tf
   car_handler
+  image_transport
+  cv_bridge
 )
+find_package(OpenCV 2 REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -134,6 +137,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 ## Declare a C++ executable
 add_executable(apollo_13 src/apollo_13.cpp)
 add_executable(car_aruco src/car_aruco.cpp)
+add_executable(lane_follower src/lane_follower.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -142,6 +146,7 @@ add_executable(car_aruco src/car_aruco.cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(apollo_13 ${catkin_LIBRARIES} )
 target_link_libraries(car_aruco ${catkin_LIBRARIES} )
+target_link_libraries(lane_follower ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${carrot_planner_LIBRARIES})
 
 #############
 ## Install ##

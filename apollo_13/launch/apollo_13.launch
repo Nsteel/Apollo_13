@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+	<master auto="start" />
+
+	<arg name="kinect" default="false" />
+	<arg name="gui" default="true" />
+
+	<!-- Set static tf transformations -->
+	<node pkg="tf" type="static_transform_publisher" name="base_laser_broadcaster" args="0.18 0 0.34 0 0 0 1 base_link base_laser 10" />
+	<node pkg="tf" type="static_transform_publisher" name="front_us_broadcaster" args="0.175 0 -0.06 0 0 0 1 base_link front_sensor 10" />
+	<node pkg="tf" type="static_transform_publisher" name="left_us_broadcaster" args="0 0.1 -0.06 1.57 0 0 base_link left_sensor 10" />
+	<node pkg="tf" type="static_transform_publisher" name="right_us_broadcaster" args="0 -0.1 -0.06 -1.57 0 0 base_link right_sensor 10" />
+
+	<!-- Run the necessary nodes to bring up the car -->
+	<node pkg="apollo_13" type="apollo_13" name="apollo_13" output ="screen" />
+	<node pkg="car_handler" type="car_handler_node" name="car_handler" />
+	<node pkg="car_handler" type="car_arduino" name="car_arduino" output="screen" />
+
+	<!-- Run RosOSC -->
+	<include file="$(find apollo_13)/launch/interaction.launch" />
+
+	<group if="$(arg kinect)">
+
+		<!-- Run the map server -->
+			<node name="map_server" pkg="map_server" type="map_server" args="$(find apollo_13)/data/map/map.yaml" />
+  		
+  			<!-- Bring up the Kinect -->
+			<include file="$(find freenect_launch)/launch/freenect.launch" />
+			
+			<!-- Convert the kinect point cloud to a laserscan message -->
+			<node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan">
+				<remap from="image" to="/camera/depth/image_raw" />
+				<param name="output_frame_id" value="base_laser" />
+			</node>
+
+		<!-- Run the navigation stack -->	
+		<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen" >
+
+			<!-- Planners -->
+			<param name="base_global_planner" value="SBPLLatticePlanner" />
+			<param name="base_local_planner" value="pose_follower/PoseFollower" />
+
+			<!-- Motion primitives file -->
+			<param name="SBPLLatticePlanner/primitive_filename" value="$(find apollo_13)/data/motion_primitives/apollo_13_motion_primitives.mprim" />
+
+			<!-- rosparam>recovery_behaviors: [{name: conservative_reset, type: clear_costmap_recovery/ClearCostmapRecovery}, {name: aggressive_reset, type: clear_costmap_recovery/ClearCostmapRecovery}]</rosparam -->
+	
+			<!-- Costmap parameters -->
+			<rosparam file="$(find apollo_13)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+			<rosparam file="$(find apollo_13)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+			<rosparam file="$(find apollo_13)/config/local_costmap_params.yaml" command="load"/>
+			<rosparam file="$(find  apollo_13)/config/global_costmap_params.yaml" command="load"/>
+			<rosparam file="$(find apollo_13)/config/sbpl_global_params.yaml" command="load" />
+		</node>
+		
+		<!-- node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 base_link base_footprint 10" / -->
+		<!-- node pkg="tf" type="static_transform_publisher" name="footprint_broadcaster" args="0 0 0 0 0 0 1 map odom 10" / -->
+		
+		<!-- Run AMCL -->
+		<include file="$(find apollo_13)/launch/amcl.launch"/>
+
+	</group>
+
+	<!-- Show the Rviz visualization-->
+    <group if="$(arg gui)">
+		<include file="$(find apollo_13)/launch/car_display.launch" />
+	</group>
+
+</launch>

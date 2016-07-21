@@ -1,0 +1,9 @@
+
+mkdir -p build.dir && pushd build.dir
+if [ ! -e Makefile ]; then
+    cmake ..
+fi
+
+make -j8
+popd
+
