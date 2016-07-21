@@ -17,7 +17,7 @@
 	<!-- Run the necessary nodes to bring up the car -->
 	<node pkg="simulation" type="simulation_node" name="simulation" />
 	<node pkg="simulation" type="scan_node" name="scan_simulation" output="screen"/>
-	<node pkg="simulation" type="usrange_node" name="usrange_simulation" />
+	<node pkg="simulation" type="usrange_node" name="usrange_simulation" output="screen"/>
 	<node pkg="automap" type="automap_node" name="automap" output="screen"/>
 
   <!-- Run the mapping -->
@@ -34,20 +34,23 @@
       <param name="str" value="0.0" />
       <param name="lsigma" value="0.0" />
       <param name="minimumScore" value="1000" />
-      <param name="map_update_interval" value="0.1" />
-			<param name="linearUpdate" value="0.01"/>
-  		<param name="angularUpdate" value="0.01"/>
+      <param name="map_update_interval" value="0.2" />
+			<param name="linearUpdate" value="0.05"/>
+  		<param name="angularUpdate" value="0.04"/>
+			<param name="iterations" value="0"/>
+			<param name="temporalUpdate" value="-1"/>
+
   	</node>
   </group>
 	<!-- Run the navigation stack -->
 	<group if="$(arg sbpl)">
-		<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+		<node pkg="move_base" type="move_base" respawn="false" name="move_base">
 
 			<!-- Planners -->
 			<!-- <param name="base_global_planner" value="SBPLLatticePlanner"/> -->
 				<!-- Motion primitives file -->
 			<!-- <param name="SBPLLatticePlanner/primitive_filename" value="$(find simulation)/data/motion_primitives/apollo_13_motion_primitives.mprim"/> -->
-			<param name="base_global_planner" value="global_planner/GlobalPlanner"/>
+			<param name="base_global_planner" value="global_planner/GlobalPlannerAdapter"/>
 			<param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS"/>
 			<rosparam file="$(find automap)/config/teb_local_planner_params.yaml" command="load"/>
 		  <!-- <param name="base_local_planner" value="pose_follower/PoseFollower"/> -->
