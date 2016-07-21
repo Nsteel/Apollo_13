@@ -15,6 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   cv_bridge
   image_transport
+  PCL REQUIRED
+  rospack
 )
 
 ## System dependencies are found with CMake's conventions
@@ -125,8 +127,13 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(CONTOUR src/Contour.cpp)
-add_library(EDGES src/FloatingEdges.cpp)
+add_library(FRONTIER src/Frontier.cpp)
+add_library(F_DETECTOR src/FrontierDetector.cpp)
+add_library(E_PLANNER src/ExplorationPlanner.cpp)
+add_library(PLANNER src/PathtransformPlanner.cpp)
+add_library(PATH src/Path.cpp)
+add_library(P_EX src/PlannerException.cpp)
+add_library(GLOBAL_PLANNER src/GlobalPlannerAdapter.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -141,11 +148,13 @@ add_library(EDGES src/FloatingEdges.cpp)
  add_dependencies(automap_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(CONTOUR ${catkin_LIBRARIES})
-target_link_libraries(EDGES ${catkin_LIBRARIES} CONTOUR)
- target_link_libraries(automap_node
-   ${catkin_LIBRARIES} EDGES
- )
+target_link_libraries(F_DETECTOR ${catkin_LIBRARIES})
+target_link_libraries(PATH ${catkin_LIBRARIES})
+target_link_libraries(FRONTIER ${catkin_LIBRARIES} PATH)
+target_link_libraries(PLANNER ${catkin_LIBRARIES} PATH P_EX)
+target_link_libraries(E_PLANNER ${catkin_LIBRARIES} PLANNER F_DETECTOR PATH FRONTIER)
+target_link_libraries(GLOBAL_PLANNER ${catkin_LIBRARIES} PLANNER )
+target_link_libraries(automap_node ${catkin_LIBRARIES} E_PLANNER PLANNER yaml-cpp)
 
 #############
 ## Install ##

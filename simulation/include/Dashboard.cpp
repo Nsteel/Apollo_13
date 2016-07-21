@@ -35,6 +35,7 @@ void telemetryCallback(const simulation::telemetry_msg::ConstPtr& tele, Ui::Dash
         ui->v_x->display(tele->v_linear.x);
         ui->v_y->display(tele->v_linear.y);
         ui->v_angle->display(tele->v_angular.z);
+        ui->distance->display(tele->radial_distance);
         ros::spinOnce();
 }
 
