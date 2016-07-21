@@ -22,6 +22,7 @@
 #include <actionlib/client/simple_client_goal_state.h>
 #include <geometry_msgs/PolygonStamped.h>
 #include <teb_local_planner/ObstacleMsg.h>
+#include <lane_detector/Lane.h>
 
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
@@ -45,8 +46,8 @@ ros::Publisher obstacles_pub;
 
 }*/
 
-void detectedPointsCB(const geometry_msgs::PolygonStampedConstPtr& detectedPoints) {
-
+void laneCB(const lane_detector::Lane::ConstPtr& lane) {
+/*
   //Vanishing Point with real world coordinates in meters
   float vp_x = 1.0; //Asumming the vanishing point to be one meter in front of the car
   float vp_y = vp_x*cvRound(640/2 - detectedPoints->polygon.points[0].x)/FOCAL_LENGTH;
@@ -87,7 +88,7 @@ void detectedPointsCB(const geometry_msgs::PolygonStampedConstPtr& detectedPoint
     ROS_INFO("x:%f, y:%f, w:%f", vp_x, vp_y, 180*w/CV_PI);
     ac->sendGoal(goal);
   }
-  ROS_INFO("State: %s",ac->getState().toString().c_str());
+  ROS_INFO("State: %s",ac->getState().toString().c_str());*/
 }
 
 
@@ -123,7 +124,7 @@ int main(int argc, char **argv){
 	   */
 
      //image_transport::Subscriber pointCloud_sub = it.subscribe("camera/depth/image_raw", 1, readPointCloud);
-     ros::Subscriber detectedPoints_sub = nh.subscribe("lane_detector/vanishing_point", 1, detectedPointsCB);
+     ros::Subscriber lane_sub = nh.subscribe<lane_detector::Lane>("lane_detector/lane", 1, laneCB);
      obstacles_pub = nh.advertise<teb_local_planner::ObstacleMsg>("/obstacles", 1);
      ac = new MoveBaseClient("move_base", true);
 
