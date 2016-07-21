@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   cv_bridge
   image_transport
-  PCL REQUIRED
+  #PCL REQUIRED
   rospack
 )
 
