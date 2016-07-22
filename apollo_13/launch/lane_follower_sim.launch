@@ -19,7 +19,7 @@
 
 			<!-- Planners -->
 			<!-- param name="base_local_planner" value="pose_follower/PoseFollower" / -->
-			<param name="base_global_planner" value="global_planner/GlobalPlanner" />
+			<param name="base_global_planner" value="global_planner/GlobalPlannerAdapter"/>
 			<param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
 			<!-- Costmap parameters -->
 			<rosparam file="$(find apollo_13)/config/costmap_common_params_simulation.yaml" command="load" ns="global_costmap"/>
@@ -28,6 +28,7 @@
 			<rosparam file="$(find  apollo_13)/config/global_costmap_params_simulation.yaml" command="load"/>
 			<!-- rosparam file="$(find  apollo_13)/config/poseFollower_params.yaml" command="load"/ -->
 			<rosparam file="$(find  apollo_13)/config/teb_local_planner_lane_follower_params.yaml" command="load"/>
+			<param name="clearing_rotation_allowed" value="false" />
 		</node>
 
 </launch>
