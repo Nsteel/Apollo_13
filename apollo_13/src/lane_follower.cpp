@@ -24,12 +24,12 @@
 #include <teb_local_planner/ObstacleMsg.h>
 #include <lane_detector/Lane.h>
 #include <nav_msgs/Path.h>
+#include <tf/transform_listener.h>
 
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
 //cv_bridge::CvImageConstPtr currentFrame_ptr;
-MoveBaseClient* ac;
 ros::Publisher obstacles_pub;
 ros::Publisher path_pub;
 
@@ -59,16 +59,18 @@ std::vector<geometry_msgs::Point32> splineSampling(const std::vector<geometry_ms
   return output;
 }
 
-void sendGoal(nav_msgs::Path& p)
+void sendGoal(nav_msgs::Path& p, MoveBaseClient* ac)
 {
+      //if(ac->getState() != actionlib::SimpleClientGoalState::ACTIVE) {
         move_base_msgs::MoveBaseGoal goal;
-        goal.target_pose = p.poses[p.poses.size()-1];
-        //ROS_INFO("Sending goal for x:%lf / y:%lf",goal.target_pose.pose.position.x,goal.target_pose.pose.position.y);
+        goal.target_pose = p.poses.back();
+        ROS_INFO("Sending goal for x:%lf / y:%lf",goal.target_pose.pose.position.x,goal.target_pose.pose.position.y);
         ac->sendGoal(goal);
         //ac.waitForResult();
+      //}
 }
 
-void laneCB(const lane_detector::Lane::ConstPtr& lane) {
+void laneCB(const lane_detector::Lane::ConstPtr& lane, tf::TransformListener* listener, MoveBaseClient* ac) {
 
   /*teb_local_planner::ObstacleMsg obstacle_msg;
   obstacle_msg.header.stamp = ros::Time::now();
@@ -96,23 +98,35 @@ void laneCB(const lane_detector::Lane::ConstPtr& lane) {
     //float w = std::atan2(y,x);
     nav_msgs::Path path;
     //float w = std::atan2(detectedPoints->polygon.points[0].y, detectedPoints->polygon.points[0].x);
-    path.header.frame_id = "base_link";
+    path.header.frame_id = "map";
     path.header.stamp = ros::Time::now();
 
     std::vector<geometry_msgs::PoseStamped> pVector;
 
     if(lane->guide_line.size() >= 4) {
       std::vector<geometry_msgs::Point32> sampled_guide_line = splineSampling(lane->guide_line);
+
+      tf::StampedTransform transform;
+      try{
+        listener->lookupTransform("/map", "/base_laser",
+                                 ros::Time(0), transform);
+      }
+      catch (tf::TransformException &ex) {
+        ROS_ERROR("%s",ex.what());
+        ros::Duration(1.0).sleep();
+      }
+
       for(int i = 0; i< sampled_guide_line.size(); i++) {
               geometry_msgs::PoseStamped new_goal;
 
               new_goal.header = path.header;
-              double yaw = std::atan2(sampled_guide_line[i].y, sampled_guide_line[i].x);
+              double yaw = std::atan2(transform.getOrigin().y() + sampled_guide_line[i].y, transform.getOrigin().x() + sampled_guide_line[i].x);
               //std::cout << 180/CV_PI*yaw << std::endl;
+              //std::cout << "x: " << transform.getOrigin().x() << " y: " << transform.getOrigin().y() << " Yaw: " << 180/CV_PI*yaw << std::endl;
               tf::Quaternion goal_quat = tf::createQuaternionFromYaw(yaw);
 
-              new_goal.pose.position.x = sampled_guide_line[i].x;
-              new_goal.pose.position.y = sampled_guide_line[i].y;
+              new_goal.pose.position.x = transform.getOrigin().x() + sampled_guide_line[i].x;
+              new_goal.pose.position.y = transform.getOrigin().y() + sampled_guide_line[i].y;
 
               new_goal.pose.orientation.x = goal_quat.x();
               new_goal.pose.orientation.y = goal_quat.y();
@@ -124,7 +138,7 @@ void laneCB(const lane_detector::Lane::ConstPtr& lane) {
       path.poses = pVector;
       path_pub.publish(path);
       ros::spinOnce();
-      sendGoal(path);
+      sendGoal(path, ac);
   }
 }
 
@@ -139,6 +153,8 @@ int main(int argc, char **argv){
     * NodeHandle destructed will close down the node.
     */
     ros::NodeHandle nh;
+
+    tf::TransformListener listener;
     //image_transport::ImageTransport it(nh);
 
 
@@ -160,21 +176,18 @@ int main(int argc, char **argv){
 	   * buffer up before throwing some away.
 	   */
 
+     MoveBaseClient ac("move_base", true);
+
      //image_transport::Subscriber pointCloud_sub = it.subscribe("camera/depth/image_raw", 1, readPointCloud);
-     ros::Subscriber lane_sub = nh.subscribe<lane_detector::Lane>("/lane_detector/lane", 1, laneCB);
+     ros::Subscriber lane_sub = nh.subscribe<lane_detector::Lane>("/lane_detector/lane", 1, std::bind(laneCB, std::placeholders::_1, &listener, &ac));
      obstacles_pub = nh.advertise<teb_local_planner::ObstacleMsg>("/obstacles", 10);
      path_pub = nh.advertise<nav_msgs::Path>("/pathtransformPlanner/path", 10);
-     ac = new MoveBaseClient("move_base", true);
-
      //wait for the action server to come up
-     while(!ac->waitForServer(ros::Duration(5.0))){
+     while(!ac.waitForServer(ros::Duration(5.0))){
        ROS_INFO("Waiting for the move_base action server to come up");
      }
 
      ros::spin();
-
-     delete ac;
-
 
     return 0;
 }
