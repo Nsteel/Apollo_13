@@ -3,7 +3,7 @@
 <launch>
 
 	<node pkg="apollo_13" type="lane_follower" name="lane_follower" output="screen"/>
-	<node pkg="lane_detector" type="lane_detector" name="lane_detector" output="screen"/>
+	<node pkg="lane_detector" type="lane_detector" name="lane_detector" output="screen" launch-prefix="gdb -ex run --args"/>
 	<!-- Set params -->
 	<!--node name="dynamic_reconfigure_load" pkg="dynamic_reconfigure" type="dynparam" args="load lane_detector $(find lane_detector)/cfg/lane_detector_params.yaml" /-->
 	<include file="$(find simulation)/launch/simulation_lane_follower.launch" />
