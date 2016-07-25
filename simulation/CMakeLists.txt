@@ -157,6 +157,8 @@ add_executable(usrange_node src/simulation_usscan.cpp)
 add_executable(dashboard_node src/simulation_dashboard.cpp ${UIS_HDRS})
 
 add_dependencies(simulation_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(simulation_node ${PROJECT_NAME}_gencpp)
+add_dependencies(DASH ${PROJECT_NAME}_gencpp)
 
 
 
