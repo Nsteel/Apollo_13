@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   car_handler
   image_transport
   cv_bridge
+  lane_detector
 )
 find_package(OpenCV 2 REQUIRED)
 
@@ -142,6 +143,8 @@ add_executable(lane_follower src/lane_follower.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(apollo_13_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_dependencies(lane_follower ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(apollo_13 ${catkin_LIBRARIES} )
