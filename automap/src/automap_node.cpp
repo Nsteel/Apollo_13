@@ -162,6 +162,9 @@ int main(int argc, char **argv){
                 double gain = cv::norm(old, map, CV_L2);
 
                 if(gain>2500.0 || retry==0) {
+                        ROS_INFO("Enough information gained: %lf",gain);
+                        old = map.clone();
+                        retry = 5;
                         //Get Position Information...
                         getPositionInfo("map", "base_footprint", listener, &position, &rpy);
                         setGridPosition(position, mapMetaData, &gridPose);
@@ -201,7 +204,9 @@ int main(int argc, char **argv){
 
                         }else{
                                 ROS_INFO("Map exploration finished, aborting loop...");
+                                ac.waitForResult();
                                 ac.cancelGoal();
+                                ac.waitForResult();
 
                                 std::string imgMetaPath = ros::package::getPath("automap") + "/data/output/map.yaml";
                                 std::string imgStatPath = ros::package::getPath("automap") + "/data/output/exploration_statistics.txt";
@@ -227,7 +232,7 @@ int main(int argc, char **argv){
                                 Y_out << YAML::Key << "origin";
                                 Y_out << YAML::Flow;
                                 Y_out << YAML::BeginSeq << mapMetaData.origin.position.x<<mapMetaData.origin.position.y
-                                <<mapMetaData.origin.position.z << YAML::EndSeq;
+                                      <<mapMetaData.origin.position.z << YAML::EndSeq;
                                 Y_out << YAML::Key << "negate";
                                 Y_out << YAML::Value << 0;
                                 Y_out << YAML::Key << "occupied_thresh";
@@ -247,8 +252,8 @@ int main(int argc, char **argv){
 
                                 std::ofstream outfile_yaml(imgMetaPath);
                                 try{
-                                  outfile_yaml<<Y_out.c_str();
-                                  ROS_INFO("MapMetaData written to: %s", imgMetaPath.c_str());
+                                        outfile_yaml<<Y_out.c_str();
+                                        ROS_INFO("MapMetaData written to: %s", imgMetaPath.c_str());
                                 }catch (std::runtime_error& ex) {
                                         std::cout << "Exception writing .yaml-file: " << ex.what() << std::endl;
                                 }
@@ -256,8 +261,8 @@ int main(int argc, char **argv){
 
                                 std::ofstream outfile_statistics(imgStatPath);
                                 try{
-                                  outfile_statistics<<Y_out_statistics.c_str();
-                                  ROS_INFO("Statistics data written to: %s", imgStatPath.c_str());
+                                        outfile_statistics<<Y_out_statistics.c_str();
+                                        ROS_INFO("Statistics data written to: %s", imgStatPath.c_str());
                                 }catch (std::runtime_error& ex) {
                                         std::cout << "Exception writing .txt-file: " << ex.what() << std::endl;
                                 }
@@ -269,9 +274,7 @@ int main(int argc, char **argv){
 
                         }
 
-                        ROS_INFO("Enough information gained: %lf",gain);
-                        old = map.clone();
-                        retry = 5;
+
                 }else{
                         ROS_INFO("Not enough information gained: %lf",gain);
                         retry--;

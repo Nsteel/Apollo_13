@@ -11,8 +11,10 @@ TebLocalPlannerROS:
   yaw_goal_tolerance: 0.5
   min_turning_radius: 0.82
 
-  min_obstacle_dist: 0.2
+  min_obstacle_dist: 0.3
   enable_homotopy_class_planning: false
 
   max_global_plan_lookahead_dist: 6.0
   feasibility_check_no_poses: 8
+
+  weight_kinematics_forward_drive: 5.0
