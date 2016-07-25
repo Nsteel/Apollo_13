@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
   rospack
+  simulation
 )
 find_package(PCL REQUIRED)
 find_package(OpenCV REQUIRED)
