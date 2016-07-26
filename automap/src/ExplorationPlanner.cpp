@@ -11,7 +11,6 @@ ExplorationPlanner::ExplorationPlanner(const PathtransformPlanner * planner, con
 
         localDetector = FrontierDetector(freeColor, unknownColor, occupiedColor);
         globalDetector = FrontierDetector(freeColor, unknownColor, occupiedColor);
-
 }
 
 bool ExplorationPlanner::findBestPlanSimple(const cv::Mat& occupancyGrid, const cv::Point& robotGridPos, const double robotYaw){
@@ -110,7 +109,7 @@ bool ExplorationPlanner::extractValidFrontiersLocal(){
                 if(radius>minL) { // i think this should only be the distance of the 2 outer points
                         cv::Point centroidGlobal = calcFrontierCentroid(globalFp);
                         double frontierYaw = calcFrontierColorGradient(globalFp); // this is quite accurate but not very smart
-                        centroidGlobal = shiftCentroid(centroidGlobal, frontierYaw); // this prevents centroids in unknown but also not very smart
+                        //centroidGlobal = shiftCentroid(centroidGlobal, frontierYaw); // this prevents centroids in unknown but also not very smart
                         cv::Point2f centroidWorld = gridPtToWorld(centroidGlobal);
                         passableFrontiers.push_back(Frontier(globalFp, centroidGlobal, centroidWorld, length, frontierYaw));
                 }
@@ -123,10 +122,12 @@ bool ExplorationPlanner::extractValidFrontiersLocal(){
         for(auto current : passableFrontiers) {
                 if(!checkProximitryToFrontier(current)) {
                         try{
-                                Path p = planner->findPath(current.getCentroidGrid());
-                                current.setPath(p);
+                                //Path p = planner->findPath(current.getCentroidGrid());
+                                //current.setPath(p);
                                 //
-                                current.setScore(calcScoreSimple(current));
+                                //current.setScore(calcScoreSimple(current));
+                                calcScoreNBV(current);
+
 
                                 frontierStack.push_back(current);
                                 //
@@ -174,7 +175,7 @@ bool ExplorationPlanner::extractValidFrontiersGlobal(){
                 if(radius>minL) { // i think this should only be the distance of the 2 outer points
                         cv::Point centroidGlobal = calcFrontierCentroid(current);
                         double frontierYaw = calcFrontierColorGradient(current); // this is quite accurate but not very smart
-                        centroidGlobal = shiftCentroid(centroidGlobal, frontierYaw); // this prevents centroids in unknown but also not very smart
+                        //centroidGlobal = shiftCentroid(centroidGlobal, frontierYaw); // this prevents centroids in unknown but also not very smart
                         cv::Point2f centroidWorld = gridPtToWorld(centroidGlobal);
                         passableFrontiers.push_back(Frontier(current, centroidGlobal, centroidWorld, length, frontierYaw));
                 }
@@ -187,10 +188,12 @@ bool ExplorationPlanner::extractValidFrontiersGlobal(){
         for(auto current : passableFrontiers) {
                 if(!checkProximitryToFrontier(current)) {
                         try{
-                                Path p = planner->findPath(current.getCentroidGrid());
-                                current.setPath(p);
+                                //Path p = planner->findPath(current.getCentroidGrid());
+                                //current.setPath(p);
                                 //
-                                current.setScore(calcScoreSimple(current));
+                                //current.setScore(calcScoreSimple(current));
+
+                                calcScoreNBV(current);
 
                                 validFrontiers.push_back(current);
                                 //
@@ -240,6 +243,209 @@ double ExplorationPlanner::calcScoreSimple(const Frontier& f) const {
         return score;
 
 
+}
+void ExplorationPlanner::calcScoreNBV(Frontier& f) const {
+
+        double yaw = f.getFrontierYaw();
+        cv::Point centroid = f.getCentroidGrid();
+
+        //double bestScore = calcInformationGain(centroid, yaw, 90.0, 0.5, 120.0);
+        double bestScore = 0;
+        double bestYaw = yaw;
+        cv::Point bestCentroid = centroid;
+
+        cv::RNG rng(cv::getTickCount());
+        //Generate and evaluate n random points in close proximitry to the frontier
+        for (int i = 0; i < 50; i++) {
+                double r = rng.uniform(20.0, 120.0); //60pxls means 2meters, based on the max view distance -> still hard code
+                //double phi = correctYawAngle(yaw, rng.uniform(0.0, 90.0)-45.0)/180.0*CV_PI;
+                double phi = CV_PI * rng.uniform(0.0, 2.0);
+                int y = r * cv::sin(phi) + centroid.y;
+                int x = r * cv::cos(phi) + centroid.x;
+                //cout<<current.getCentroid()<<" --- "<<x<<" // "<<y<<" ---- " << map.cols<<" // " << map.rows<<endl;
+                if (x < occupancyGrid.cols && y < occupancyGrid.rows && x >= 0 && y >= 0) {
+                        cv::Point p(x, y);
+
+                        if (occupancyGrid.at<uchar>(p) == PTP::FREE_CELL_COLOR) {
+                                //std::cout<<p<<" --- "<<x<<" // "<<y<<" ---- "<<std::endl;
+                                //int nAngles = 90.0 / 15.0;
+                                int nAngles = 180.0 / 5.0;
+
+                                double angle = correctYawAngle(yaw, -90.0 / 2.0);
+                                //double angle = 0;
+                                for (int a = 0; a < nAngles; a++) {
+                                        double quality = isInView(f.getPoints(), p, angle, 90.0, 120.0);
+                                        std::cout<<"in view.."<<quality<<std::endl;
+                                        if(quality >= (1.0-0.3) && quality <= 1.0) {
+
+                                                double score = calcInformationGain(p, angle, 90.0, 0.5, 120.0);
+                                                if (score > bestScore) {
+                                                        bestScore = score;
+                                                        bestCentroid = p;
+                                                        bestYaw = angle;
+                                                }
+
+                                        }
+                                        angle = correctYawAngle(angle, 5.0);
+
+
+                                }
+
+                        }
+                }
+        }
+
+        f.setScore(bestScore);
+        f.setFrontierYaw(bestYaw);
+        f.setCentroidGrid(bestCentroid);
+        f.setPath(planner->findPath(bestCentroid));
+}
+
+double ExplorationPlanner::isInView(const std::vector<cv::Point>& pts, const cv::Point& start, double yaw, double FOV, double maxDistance) const {
+        double minAngle = correctYawAngle(yaw, -FOV / 2.0);
+        double maxAngle = correctYawAngle(yaw, FOV / 2.0);
+        cv::Point P2;
+        P2.x = (int) round(
+                start.x
+                + maxDistance * cv::cos((-minAngle) * CV_PI / 180.0));
+        P2.y = (int) round(
+                start.y
+                + maxDistance * cv::sin((-minAngle) * CV_PI / 180.0));
+        cv::Point P3;
+        P3.x = (int) round(
+                start.x
+                + maxDistance * cv::cos((-maxAngle) * CV_PI / 180.0));
+        P3.y = (int) round(
+                start.y
+                + maxDistance * cv::sin((-maxAngle) * CV_PI / 180.0));
+
+        std::vector<cv::Point>viewPoly;
+        viewPoly.push_back(start);
+        viewPoly.push_back(P2);
+        viewPoly.push_back(P3);
+        viewPoly.push_back(start);
+        int c = 0;
+        for(auto current : pts) {
+                if(pointPolygonTest(viewPoly, current, false)>=0) {
+                        c++;
+                }
+        }
+        return ((double)c)/((double)pts.size());
+
+}
+
+double ExplorationPlanner::calcInformationGain(const cv::Point& start, double yaw, double FOV, double angularResolution, double maxDistance) const {
+        cv::Rect baseWindow(0, 0, occupancyGrid.rows, occupancyGrid.cols);
+        cv::Rect rw(0, 0, 260, 260);
+        rw.x = start.x-rw.width/2;
+        rw.y = start.y-rw.height/2;
+        rw = rw & baseWindow;
+        cv::Mat original = occupancyGrid(rw).clone();
+        //cv::Mat temp = occupancyGrid(rw).clone();
+        int kernelSize = 3;
+        //cv::blur(original,original,cv::Size(kernelSize, kernelSize));
+        for(int b = 0; b<2; b++) {
+                cv::erode(original,original, cv::getStructuringElement( 0,
+                                                                        cv::Size( 2*kernelSize + 1, 2*kernelSize + 1 ),
+                                                                        cv::Point( kernelSize, kernelSize ) ));
+        }
+        //cv::blur(original,original,cv::Size(kernelSize, kernelSize));
+        cv::Mat temp = original.clone();
+
+        int nAngles = FOV / angularResolution;
+        double angle = correctYawAngle(yaw, -FOV / 2);
+        //std::cout<<"start: "<<angle;
+        //std::vector<cv::Point>viewPoly;
+        //cv::Point movingPxl=start;
+        //viewPoly.push_back(start);
+        //cv::Point movingPixel(start.x, start.y);
+        for (int a = 0; a <= nAngles; a++) {
+                cv::Point P1(start.x-rw.x, start.y-rw.y);
+
+                cv::Point P2;
+
+                P2.x = (int) round(
+                        P1.x
+                        + maxDistance * cv::cos((-angle) * CV_PI / 180.0)); // - vor angle entfernt
+                P2.y = (int) round(
+                        P1.y
+                        + maxDistance * cv::sin((-angle) * CV_PI / 180.0)); // - vor angle entfernt
+
+
+                cv::LineIterator it(original, P1, P2, 8);
+                for (int i = 0; i < it.count; i++, ++it) {
+                        int current = original.at<uchar>(it.pos());
+
+                        if (current < PTP::UNKNOWN_CELL_COLOR) {
+                                break;
+                        } else {
+                                temp.at<uchar>(it.pos()) = PTP::FREE_CELL_COLOR;
+                                //movingPixel = cv::Point(it.pos().x+rw.x, it.pos().y+rw.y);
+                                //movingPxl = it.pos();
+
+                        }
+                }
+                //viewPoly.push_back(movingPixel);
+                angle = correctYawAngle(angle, angularResolution);
+        }
+        /*
+           viewPoly.push_back(start);
+           for(auto blubb : viewPoly){
+            std::cout<<blubb<<std::endl;
+           }
+           //cv::Point s1 = f.getPoints()[0];
+           //cv::Point s2 =f.getPoints()[f.getPoints().size()-1];
+           bool isInViewPoly = false;
+           for(auto pts : f.getPoints()){
+           if(pointPolygonTest(viewPoly, pts, false)<0){
+            //isInViewPoly = false;
+            //break;
+           }else{
+            isInViewPoly = true;
+           }
+           }
+           //bool isInViewPoly = (pointPolygonTest(viewPoly, s1, false)>=0) && (pointPolygonTest(viewPoly, s2, false)>=0);
+
+           if(!isInViewPoly) {
+                std::cout<<" // frontier not in view: "<<isInViewPoly<<" // "<<std::endl;
+                return -1;
+           }else{
+                std::cout<<" // frontier is in view: "<<isInViewPoly<<" // "<<std::endl;
+           }
+         */
+
+        try{
+                double distance = planner->findPath(start).getWorldLength();
+                double dTh = yaw-robotYaw;
+                if(dTh<-180.0) {
+                        dTh += 360.0;
+                }else if(dTh>180.0) {
+                        dTh -= 360.0;
+                }
+                double n = cv::norm(original, temp, CV_L2);
+                /*
+                   std::ostringstream strs;
+                   strs<<"P:"<<start<<"-Y:"<<yaw<<"-iterations:"<<nAngles<<"-gain:"<<n<<".png";
+                   std::string str = strs.str();
+                   std::string imgPath = ros::package::getPath("automap") + "/data/test/" + str;
+                   std::vector<int> com_param;
+                   com_param.push_back(CV_IMWRITE_PNG_COMPRESSION);
+                   com_param.push_back(9);
+                   try {
+                        cv::imwrite(imgPath, temp, com_param);
+                        ROS_INFO("Map written to: %s", imgPath.c_str());
+
+                   } catch (std::runtime_error& ex) {
+                        std::cout << "Exception converting img to PNG: " << ex.what() << std::endl;
+                   }
+                 */
+                //return n;
+                //return cv::norm(original, temp, CV_L2) * cv::exp(1.0/(1.0+distance) + (180.0-std::fabs(dTh))/180);
+                return n * cv::exp(-0.1*distance) * (180.0-std::fabs(dTh))/180;
+        }catch(std::exception& e) {
+                //std::cout<<e.what()<<std::endl;
+                return -1;
+        }
 }
 
 bool ExplorationPlanner::checkProximitryToFrontier(const Frontier& f) const {
@@ -346,11 +552,11 @@ cv::Mat ExplorationPlanner::drawFrontiers(){
                 }
 
                 cv::circle(out, robotGridPos, 2, cv::Scalar(0, 0, 255), -1, 8, 0);
-                std::ostringstream strs;
-                strs<<"Y: "<<robotYaw;
-                std::string str = strs.str();
-                std::string ostring = str;
-                cv::putText(out, ostring, robotGridPos, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255,0,0) );
+                //std::ostringstream strs;
+                //strs<<"Y: "<<robotYaw;
+                //std::string str = strs.str();
+                //std::string ostring = str;
+                //cv::putText(out, ostring, robotGridPos, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255,0,0) );
                 double length = 25;
                 cv::Point P2;
 
@@ -417,10 +623,10 @@ cv::Point ExplorationPlanner::shiftCentroid(const cv::Point& point, const double
         end.x =  (int)round(point.x + 120 * cv::cos((-temp_yaw) * CV_PI / 180.0));
         end.y =  (int)round(point.y + 120 * cv::sin((-temp_yaw) * CV_PI / 180.0));
         cv::LineIterator it(occupancyGrid, point, end, 8);
-        for(int i = 0; i<it.count; i++, ++it){
-          if(occupancyGrid.at<uchar>(it.pos()) > PTP::UNKNOWN_CELL_COLOR){
-            return it.pos();
-          }
+        for(int i = 0; i<it.count; i++, ++it) {
+                if(occupancyGrid.at<uchar>(it.pos()) > PTP::UNKNOWN_CELL_COLOR) {
+                        return it.pos();
+                }
         }
         return point;
 
@@ -521,10 +727,23 @@ double ExplorationPlanner::makeYaw(const double angle) const {
         }
         return yaw;
 }
-
-int ExplorationPlanner::correctYawAngle(const int theta, const int increment) const {
+/*
+   int ExplorationPlanner::correctYawAngle(const int theta, const int increment) const {
         int yaw = 0;
         int angle = theta + increment;
+        if (angle > 180.0) {
+                yaw = -180.0 - (180.0 - angle);
+        } else if (angle < -180.0) {
+                yaw = 180.0 - (-180.0 - angle);
+        } else {
+                yaw = angle;
+        }
+        return yaw;
+   }
+ */
+double ExplorationPlanner::correctYawAngle(const double theta, const double increment) const {
+        double yaw = 0;
+        double angle = theta + increment;
         if (angle > 180.0) {
                 yaw = -180.0 - (180.0 - angle);
         } else if (angle < -180.0) {

@@ -1,0 +1,2 @@
+driven distance during exploration(m): 106.4127995859315
+time elapsed during exploration(s): 392.4997414

@@ -30,6 +30,9 @@ const cv::Point& Frontier::getCentroidGrid() const {
 const cv::Point2f& Frontier::getCentroidWorld() const {
         return centroidWorld;
 }
+void Frontier::setCentroidGrid(const cv::Point& p){
+        this->centroidGrid = p;
+}
 const double Frontier::getFrontierYaw() const {
         return frontierYaw;
 }

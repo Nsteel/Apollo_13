@@ -1,6 +1,8 @@
 #ifndef EXPLORATION_PLANNER_CPP
 #define EXPLORATION_PLANNER_CPP
 
+#include <ros/package.h>
+#include <opencv2/opencv.hpp>
 #include "PathtransformPlanner.h"
 #include "FrontierDetector.h"
 #include "Frontier.h"
@@ -47,6 +49,9 @@ private:
         cv::Point2f gridPtToWorld(const cv::Point& point) const;
         double calcFrontierLength(const frontierPoints& points) const;
         double calcScoreSimple(const Frontier& f) const;
+        void calcScoreNBV(Frontier& f) const;
+        double isInView(const std::vector<cv::Point>& pts, const cv::Point& start, double yaw, double FOV, double maxDistance) const;
+        double calcInformationGain(const cv::Point& start, double yaw, double FOV, double angularResolution, double maxDistance) const;
         bool checkProximitryToFrontier(const Frontier& f) const;
         cv::Point calcFrontierCentroid(const frontierPoints& points) const;
         cv::Point shiftCentroid(const cv::Point& point, const double yaw) const;
@@ -54,7 +59,8 @@ private:
 
         int makeYaw(const int angle) const;
         double makeYaw(const double angle) const;
-        int correctYawAngle(const int theta, const int increment) const;
+        //int correctYawAngle(const int theta, const int increment) const;
+        double correctYawAngle(const double theta, const double increment) const;
 
 };
 

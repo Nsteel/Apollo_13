@@ -16,6 +16,7 @@ public:
         const frontierPoints& getPoints() const;
         const cv::Point& getCentroidGrid() const;
         const cv::Point2f& getCentroidWorld() const;
+        void setCentroidGrid(const cv::Point& p);
         const double getFrontierYaw() const;
         void setFrontierYaw(const double frontierYaw);
         const Path& getPath() const;
