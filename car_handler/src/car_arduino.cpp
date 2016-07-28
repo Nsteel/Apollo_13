@@ -150,6 +150,7 @@ void readString(std::string input){
 				// '*' is a speparator between data fields
 				if((*it)=='#'){
 					preamble = true;
+					continue;
 				}
 				if((*it)!='*' && preamble){
 					result.push_back(*it);
@@ -162,7 +163,6 @@ void readString(std::string input){
 						//vth = temp[1];
 						//th = temp[2];
 						dist = temp[0];
-
 						w_x = temp[2]; // 5 und 4 switched because filter uses drone standard
 						w_y = temp[1];
 						w_z = temp[3];

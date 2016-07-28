@@ -9,7 +9,7 @@ TebLocalPlannerROS:
   xy_goal_tolerance: 0.05
   yaw_goal_tolerance: 0.5
   min_turning_radius: 0.82
-  min_obstacle_dist: 0.2
+  min_obstacle_dist: 0.1
 
   enable_homotopy_class_planning: false
 
