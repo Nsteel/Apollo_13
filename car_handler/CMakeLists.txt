@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   tf
 )
 
+find_package(OpenCV 2 REQUIRED)
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -93,7 +95,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 #include_directories(include)
 #include_directories(
-#${catkin_INCLUDE_DIRS}, 
+#${catkin_INCLUDE_DIRS},
 #)
 
 ## Declare a cpp library
@@ -104,6 +106,7 @@ add_library(FWD_KIN src/ForwardKinematics.cpp)
 ## Declare a cpp executable
 add_executable(car_handler_node src/car_handler.cpp)
 add_executable(car_arduino src/car_arduino.cpp)
+add_executable(position_estimation src/PositionEstimation.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -114,6 +117,7 @@ target_link_libraries(car_handler_node
  	${catkin_LIBRARIES}
 	ARDUINO
  )
+target_link_libraries(position_estimation ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 target_link_libraries(car_arduino ${catkin_LIBRARIES} ARDUINO SPEED FWD_KIN)
 
 #############
@@ -179,7 +183,3 @@ endif()
 # catkin_add_nosetests(test)
 
 include_directories(include ${catkin_INCLUDE_DIRS})
-
-
-
-
