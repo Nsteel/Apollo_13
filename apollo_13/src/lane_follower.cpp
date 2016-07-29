@@ -64,7 +64,21 @@ void sendGoal(nav_msgs::Path& p, MoveBaseClient* ac)
       //if(ac->getState() != actionlib::SimpleClientGoalState::ACTIVE) {
         move_base_msgs::MoveBaseGoal goal;
         goal.target_pose = p.poses.back();
-        ROS_INFO("Sending goal for x:%lf / y:%lf",goal.target_pose.pose.position.x,goal.target_pose.pose.position.y);
+        double yaw_final = std::atan2(p.poses.back().pose.position.y - (*(p.poses.end()-2)).pose.position.y, p.poses.back().pose.position.x - (*(p.poses.end()-2)).pose.position.x);
+        double yaw_start = std::atan2((*(p.poses.begin()+1)).pose.position.y - (*(p.poses.begin())).pose.position.y, (*(p.poses.begin()+1)).pose.position.y - (*(p.poses.begin())).pose.position.y);
+        tf::Quaternion goal_quat = tf::createQuaternionFromYaw(yaw_final);
+        tf::Quaternion start_quat = tf::createQuaternionFromYaw(yaw_start);
+
+        p.poses.front().pose.orientation.x = start_quat.x();
+        p.poses.front().pose.orientation.y = start_quat.y();
+        p.poses.front().pose.orientation.z = start_quat.z();
+        p.poses.front().pose.orientation.w = start_quat.w();
+
+        goal.target_pose.pose.orientation.x = goal_quat.x();
+        goal.target_pose.pose.orientation.y = goal_quat.y();
+        goal.target_pose.pose.orientation.z = goal_quat.z();
+        goal.target_pose.pose.orientation.w = goal_quat.w();
+        ROS_INFO("Sending goal for x:%lf / y:%lf / start_yaw:%lf / end_yaw:%lf",goal.target_pose.pose.position.x,goal.target_pose.pose.position.y, yaw_start, yaw_final);
         ac->sendGoal(goal);
         //ac.waitForResult();
       //}
@@ -72,28 +86,20 @@ void sendGoal(nav_msgs::Path& p, MoveBaseClient* ac)
 
 void laneCB(const lane_detector::Lane::ConstPtr& lane, tf::TransformListener* listener, MoveBaseClient* ac) {
 
-  /*teb_local_planner::ObstacleMsg obstacle_msg;
+  teb_local_planner::ObstacleMsg obstacle_msg;
   obstacle_msg.header.stamp = ros::Time::now();
-  obstacle_msg.header.frame_id = "base_footprint";
-  geometry_msgs::Point32 line_start;
-  geometry_msgs::Point32 line_end;
+  obstacle_msg.header.frame_id = "base_laser";
 
   //Left lane added as obstacle
   obstacle_msg.obstacles.push_back(geometry_msgs::PolygonStamped());
-  line_start.x = 0;
-  line_start.y = 0.19; //detectedPoints->polygon.points[1].y;
-  line_end.x = vp_x;
-  line_end.y = vp_y;
-  obstacle_msg.obstacles[0].polygon.points = {line_start, line_end};
+
+  obstacle_msg.obstacles[0].polygon.points = lane->left_line;
 
   //right lane added as obstacle
   obstacle_msg.obstacles.push_back(geometry_msgs::PolygonStamped());
-  line_start.x = 0;
-  line_start.y = -0.19;//detectedPoints->polygon.points[2].y;
-  line_end.x = vp_x;
-  line_end.y = vp_y;
-  obstacle_msg.obstacles[1].polygon.points = {line_start, line_end};
-  obstacles_pub.publish(obstacle_msg);*/
+  obstacle_msg.obstacles[1].polygon.points = lane->right_line;
+
+  //obstacles_pub.publish(obstacle_msg);
 
     //float w = std::atan2(y,x);
     nav_msgs::Path path;
@@ -120,13 +126,14 @@ void laneCB(const lane_detector::Lane::ConstPtr& lane, tf::TransformListener* li
               geometry_msgs::PoseStamped new_goal;
 
               new_goal.header = path.header;
+
+              new_goal.pose.position.x = transform.getOrigin().x() + sampled_guide_line[i].x;
+              new_goal.pose.position.y = transform.getOrigin().y() + sampled_guide_line[i].y;
+
               double yaw = std::atan2(transform.getOrigin().y() + sampled_guide_line[i].y, transform.getOrigin().x() + sampled_guide_line[i].x);
               //std::cout << 180/CV_PI*yaw << std::endl;
               //std::cout << "x: " << transform.getOrigin().x() << " y: " << transform.getOrigin().y() << " Yaw: " << 180/CV_PI*yaw << std::endl;
               tf::Quaternion goal_quat = tf::createQuaternionFromYaw(yaw);
-
-              new_goal.pose.position.x = transform.getOrigin().x() + sampled_guide_line[i].x;
-              new_goal.pose.position.y = transform.getOrigin().y() + sampled_guide_line[i].y;
 
               new_goal.pose.orientation.x = goal_quat.x();
               new_goal.pose.orientation.y = goal_quat.y();
@@ -180,7 +187,7 @@ int main(int argc, char **argv){
 
      //image_transport::Subscriber pointCloud_sub = it.subscribe("camera/depth/image_raw", 1, readPointCloud);
      ros::Subscriber lane_sub = nh.subscribe<lane_detector::Lane>("/lane_detector/lane", 1, std::bind(laneCB, std::placeholders::_1, &listener, &ac));
-     obstacles_pub = nh.advertise<teb_local_planner::ObstacleMsg>("/obstacles", 10);
+     obstacles_pub = nh.advertise<teb_local_planner::ObstacleMsg>("/move_base/TebLocalPlannerROS/obstacles", 10);
      path_pub = nh.advertise<nav_msgs::Path>("/pathtransformPlanner/path", 10);
      //wait for the action server to come up
      while(!ac.waitForServer(ros::Duration(5.0))){
