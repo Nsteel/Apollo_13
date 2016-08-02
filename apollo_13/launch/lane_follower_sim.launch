@@ -3,7 +3,9 @@
 <launch>
 
 	<node pkg="apollo_13" type="lane_follower" name="lane_follower" output="screen"/>
-	<node pkg="lane_detector" type="lane_detector" name="lane_detector" output="screen" launch-prefix="gdb -ex run --args"/>
+	<node pkg="lane_detector" type="lane_detector" name="lane_detector" output="screen">
+		<remap from="camera_info" to="/camera/rgb/camera_info"/>
+	</node>
 	<!-- Set params -->
 	<!--node name="dynamic_reconfigure_load" pkg="dynamic_reconfigure" type="dynparam" args="load lane_detector $(find lane_detector)/cfg/lane_detector_params.yaml" /-->
 	<include file="$(find simulation)/launch/simulation_lane_follower.launch" />
@@ -15,7 +17,7 @@
 	<node name="kinect_throttler" type="throttle" pkg="topic_tools" args="messages /camera/rgb/image_rect_mono 30 /kinect_mono_throttled" />
 
 	<!-- Run the navigation stack -->
-		<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen" >
+		<node pkg="move_base" type="move_base" respawn="false" name="move_base">
 
 			<!-- Planners -->
 			<!-- param name="base_local_planner" value="pose_follower/PoseFollower" / -->
