@@ -69,6 +69,7 @@
   <run_depend>cv_bridge</run_depend>
   <run_depend>teb_local_planner</run_depend>
   <run_depend>lane_detector</run_depend>
+  <run_depend>imu_complementary_filter</run_depend>
 
  <!-- build_depend>car_handler</build_depend -->
  <!-- run_depend>car_handler</run_depend -->
