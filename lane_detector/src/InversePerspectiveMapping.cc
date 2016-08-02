@@ -4,9 +4,7 @@
  * \date 11/29/2006
  */
 
-#include "InversePerspectiveMapping.hh"
-
-#include "CameraInfoOpt.h"
+#include <lane_detector/InversePerspectiveMapping.hh>
 
 #include <iostream>
 #include <math.h>
@@ -454,32 +452,6 @@ void mcvTransformImIPM2Im(const CvMat *inMat, CvMat* outMat, const IPMInfo *ipmI
   //convert to image coordinates
   mcvTransformGround2Image(outMat, outMat, cameraInfo);
 
-}
-
-
-/**
- * Initializes the cameraInfo structure with data read from the conf file
- *
- * \param fileName the input camera conf file name
- * \param cameraInfo the returned camera parametrs struct
- *
- */
-void mcvInitCameraInfo (char * const fileName, CameraInfo *cameraInfo)
-{
-  //parsed camera data
-  CameraInfoParserInfo camInfo;
-  //read the data
-  assert(cameraInfoParser_configfile(fileName, &camInfo, 0, 1, 1)==0);
-  //init the strucure
-  cameraInfo->focalLength.x = camInfo.focalLengthX_arg;
-  cameraInfo->focalLength.y = camInfo.focalLengthY_arg;
-  cameraInfo->opticalCenter.x = camInfo.opticalCenterX_arg;
-  cameraInfo->opticalCenter.y = camInfo.opticalCenterY_arg;
-  cameraInfo->cameraHeight = camInfo.cameraHeight_arg;
-  cameraInfo->pitch = camInfo.pitch_arg * CV_PI/180;
-  cameraInfo->yaw = camInfo.yaw_arg * CV_PI/180;
-  cameraInfo->imageWidth = camInfo.imageWidth_arg;
-  cameraInfo->imageHeight = camInfo.imageHeight_arg;
 }
 
 
