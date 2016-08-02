@@ -51,7 +51,6 @@
   <build_depend>tf</build_depend>
   <build_depend>cv_bridge</build_depend>
   <build_depend>image_transport</build_depend>
-  <build_depend>lane_detector</build_depend>
   <run_depend>ar_sys</run_depend>
   <run_depend>freenect_launch</run_depend>
   <run_depend>freenect_camera</run_depend>
@@ -68,7 +67,6 @@
   <run_depend>image_transport</run_depend>
   <run_depend>cv_bridge</run_depend>
   <run_depend>teb_local_planner</run_depend>
-  <run_depend>lane_detector</run_depend>
   <run_depend>imu_complementary_filter</run_depend>
 
  <!-- build_depend>car_handler</build_depend -->
