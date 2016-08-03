@@ -29,7 +29,7 @@
 	<node pkg="apollo_13" type="apollo_13" name="apollo_13" output ="screen" />
 	<node pkg="car_handler" type="car_handler_node" name="car_handler" />
 	<node pkg="car_handler" type="car_arduino" name="car_arduino" output="screen" />
-	<include file="$(find imu_complementary_filter)/launch/complementary_filter.launch" />
+	<include file="$(find apollo_13)/launch/complementary_filter.launch" />
 
 	<!-- Run RosOSC -->
 	<include file="$(find apollo_13)/launch/interaction.launch" />
