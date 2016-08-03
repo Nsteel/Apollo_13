@@ -223,7 +223,7 @@ int main(int argc, char **argv){
        ROS_INFO("Waiting for the move_base action server to come up");
      }
 
-     ros::Rate loop_rate(10);
+     ros::Rate loop_rate(20);
      while(ros::ok()) {
         motor_msg.data = 3;
         motorControl_pub.publish(motor_msg);
