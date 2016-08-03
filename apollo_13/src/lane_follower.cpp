@@ -167,16 +167,18 @@ void laneCB(const lane_detector::Lane::ConstPtr& lane, tf::TransformListener* li
 }
 
 void laneCB2(const lane_detector::Lane::ConstPtr& lane) {
-  double yaw = std::atan2(lane->guide_line.back().y, lane->guide_line.back().x) * 180/CV_PI;
-  int steering = angleToSteering(yaw);
-  std_msgs::Int32 steering_msg;
-  steering_msg.data = steering;
-  steeringControl_pub.publish(steering_msg);
-  std_msgs::Int32 motor_msg;
-  motor_msg.data = 3;
-  motorControl_pub.publish(motor_msg);
-  ros::spinOnce();
-  ROS_INFO("Steering Angle: %i", steering);
+  if(lane->guide_line.size() >= 4) {
+    double yaw = std::atan2(lane->guide_line.back().y, lane->guide_line.back().x) * 180/CV_PI;
+    int steering = angleToSteering(yaw);
+    std_msgs::Int32 steering_msg;
+    steering_msg.data = steering;
+    steeringControl_pub.publish(steering_msg);
+    std_msgs::Int32 motor_msg;
+    motor_msg.data = 3;
+    motorControl_pub.publish(motor_msg);
+    ros::spinOnce();
+    ROS_INFO("Steering Angle: %i", steering);
+  }
 }
 
 
