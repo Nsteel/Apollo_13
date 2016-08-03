@@ -32,8 +32,8 @@ typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseCl
 
 ros::Publisher obstacles_pub;
 ros::Publisher path_pub;
-ros::Publisher motorControl_pub;
-ros::Publisher steeringControl_pub;
+std_msgs::Int32 steering_msg;
+std_msgs::Int32 motor_msg;
 
 const double angleArray[101]={25.0, 24.6, 24.2, 23.8, 23.4, 23.0, 22.6, 22.2, 21.8, 21.4,
 						21.0, 20.6, 20.2, 19.8, 19.4, 19.0, 18.6, 18.2, 17.8, 17.4,
@@ -170,13 +170,7 @@ void laneCB2(const lane_detector::Lane::ConstPtr& lane) {
   if(lane->guide_line.size() >= 4) {
     double yaw = std::atan2(lane->guide_line.back().y, lane->guide_line.back().x) * 180/CV_PI;
     int steering = angleToSteering(yaw);
-    std_msgs::Int32 steering_msg;
     steering_msg.data = steering;
-    steeringControl_pub.publish(steering_msg);
-    std_msgs::Int32 motor_msg;
-    motor_msg.data = 3;
-    motorControl_pub.publish(motor_msg);
-    ros::spinOnce();
     ROS_INFO("Steering Angle: %i", steering);
   }
 }
@@ -222,14 +216,21 @@ int main(int argc, char **argv){
      ros::Subscriber lane_sub = nh.subscribe<lane_detector::Lane>("/lane_detector/lane", 1, std::bind(laneCB2, std::placeholders::_1));
      obstacles_pub = nh.advertise<teb_local_planner::ObstacleMsg>("/move_base/TebLocalPlannerROS/obstacles", 10);
      path_pub = nh.advertise<nav_msgs::Path>("/pathtransformPlanner/path", 10);
-     motorControl_pub = nh.advertise<std_msgs::Int32>("car_handler/motor", 10);
-     steeringControl_pub = nh.advertise<std_msgs::Int32>("car_handler/steering", 10);
+     ros::Publisher motorControl_pub = nh.advertise<std_msgs::Int32>("car_handler/motor", 10);
+     ros::Publisher steeringControl_pub = nh.advertise<std_msgs::Int32>("car_handler/steering", 10);
      //wait for the action server to come up
      while(!ac.waitForServer(ros::Duration(5.0))){
        ROS_INFO("Waiting for the move_base action server to come up");
      }
 
-     ros::spin();
+     ros::Rate loop_rate(10);
+     while(ros::ok()) {
+        motor_msg.data = 3;
+        motorControl_pub.publish(motor_msg);
+        steeringControl_pub.publish(steering_msg);
+        ros::spinOnce();
+        loop_rate.sleep();
+     }
 
     return 0;
 }
