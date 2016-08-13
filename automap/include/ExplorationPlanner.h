@@ -15,7 +15,7 @@ class ExplorationPlanner {
 public:
         ExplorationPlanner(const PathtransformPlanner * planner, const int windowSize_x=600,
                            const int windowSize_y=600);
-        bool findBestPlanSimple(const cv::Mat& occupancyGrid, const cv::Point& robotGridPos, const double robotYaw);
+        bool findBestPlan(const cv::Mat& occupancyGrid, const cv::Point& robotGridPos, const double robotYaw, bool useNBV);
         nav_msgs::Path getBestPlan(std_msgs::Header& h);
         cv::Mat drawFrontiers();
         cv::Mat drawWindow();
@@ -40,8 +40,8 @@ private:
         std::list<Frontier>frontierStack;
         std::list<Path>pathStack;
 
-        bool extractValidFrontiersLocal();
-        bool extractValidFrontiersGlobal();
+        bool extractValidFrontiersLocal(bool useNBV);
+        bool extractValidFrontiersGlobal(bool useNBV);
         void scoreValidFrontiersSimple();
         void extractBestFrontier();
 
@@ -50,6 +50,7 @@ private:
         double calcFrontierLength(const frontierPoints& points) const;
         double calcScoreSimple(const Frontier& f) const;
         void calcScoreNBV(Frontier& f) const;
+        std::vector<cv::Point> getNRandomPoints(const cv::Point& frontierCentroid, cv::RNG* rngSeed, double innerRadius, double outerRadius, int n) const;
         double isInView(const std::vector<cv::Point>& pts, const cv::Point& start, double yaw, double FOV, double maxDistance) const;
         double calcInformationGain(const cv::Point& start, double yaw, double FOV, double angularResolution, double maxDistance) const;
         bool checkProximitryToFrontier(const Frontier& f) const;

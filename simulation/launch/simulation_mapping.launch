@@ -2,7 +2,7 @@
 <launch>
 	<master auto="start"/>
 
-	<arg name="sbpl" default="false"/>
+	<arg name="planner" default="true"/>
 	<arg name="dashboard" default="true"/>
 	<arg name="rviz" default="true"/>
   <arg name="gmapper" default="true"/>
@@ -43,7 +43,7 @@
   	</node>
   </group>
 	<!-- Run the navigation stack -->
-	<group if="$(arg sbpl)">
+	<group if="$(arg planner)">
 		<node pkg="move_base" type="move_base" respawn="false" name="move_base">
 
 			<!-- Planners -->

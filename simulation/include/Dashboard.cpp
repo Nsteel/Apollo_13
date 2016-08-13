@@ -7,6 +7,7 @@ Dashboard::Dashboard(ros::NodeHandle* nh, QWidget *parent) :
         ui->setupUi(this);
         ctrl_msg = control_msg();
         commands = nh->advertise<simulation::ctrl_msg>("robot_control", 10);
+        automap = nh->advertise<automap_ctrl>("automap/ctrl_msg", 10);
         robotInfo = nh->subscribe<simulation::telemetry_msg>("telemetry", 10, boost::bind(telemetryCallback, _1, ui));
 
         connect(ui->speedSlider, SIGNAL(valueChanged(int)), this, SLOT(valueChangedSpeed(int)));
@@ -17,6 +18,9 @@ Dashboard::Dashboard(ros::NodeHandle* nh, QWidget *parent) :
         connect(ui->maxSteering, SIGNAL(clicked()), this, SLOT(maxSteeringClicked()));
         connect(ui->minSteering, SIGNAL(clicked()), this, SLOT(minSteeringClicked()));
         connect(ui->centerSteering, SIGNAL(clicked()), this, SLOT(centerSteeringClicked()));
+        connect(ui->automap_ctrl, SIGNAL(stateChanged(int)), this, SLOT(automapControlClicked()));
+        connect(ui->automap_sens, SIGNAL(stateChanged(int)), this, SLOT(automapSensingClicked()));
+        connect(ui->automap_nbv, SIGNAL(stateChanged(int)), this, SLOT(automapNBVClicked()));
 
         timer = new QTimer(this);
         connect(timer, SIGNAL(timeout()), this, SLOT(pollNodeHandle()));
@@ -149,5 +153,32 @@ void Dashboard::centerSteeringClicked(){
         ui->steeringSlider->setValue(8);
         ctrl_msg.steering=8;
         commands.publish(ctrl_msg);
+        ros::spinOnce();
+}
+
+void Dashboard::automapControlClicked(){
+        automap_msg.header.stamp = ros::Time::now();
+        automap_msg.control_On=ui->automap_ctrl->isChecked();
+        automap_msg.detection_On=ui->automap_sens->isChecked();
+        automap_msg.NBV_On=ui->automap_nbv->isChecked();
+        automap.publish(automap_msg);
+        ros::spinOnce();
+}
+
+void Dashboard::automapSensingClicked(){
+        automap_msg.header.stamp = ros::Time::now();
+        automap_msg.control_On=ui->automap_ctrl->isChecked();
+        automap_msg.detection_On=ui->automap_sens->isChecked();
+        automap_msg.NBV_On=ui->automap_nbv->isChecked();
+        automap.publish(automap_msg);
+        ros::spinOnce();
+}
+
+void Dashboard::automapNBVClicked(){
+        automap_msg.header.stamp = ros::Time::now();
+        automap_msg.control_On=ui->automap_ctrl->isChecked();
+        automap_msg.detection_On=ui->automap_sens->isChecked();
+        automap_msg.NBV_On=ui->automap_nbv->isChecked();
+        automap.publish(automap_msg);
         ros::spinOnce();
 }

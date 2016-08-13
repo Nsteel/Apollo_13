@@ -8,9 +8,11 @@
 #include <simulation/ctrl_msg.h>
 #include <QTimer>
 #include <QKeyEvent>
+#include <automap/automap_ctrl_msg.h>
 
 typedef geometry_msgs::Twist twist_msg;
 typedef simulation::ctrl_msg control_msg;
+typedef automap::automap_ctrl_msg automap_ctrl;
 
 namespace Ui {
 class Dashboard;
@@ -32,7 +34,9 @@ private:
         Ui::Dashboard *ui;
         ros::NodeHandle* nh;
         control_msg ctrl_msg;
+        automap_ctrl automap_msg;
         ros::Publisher commands;
+        ros::Publisher automap;
         ros::Subscriber robotInfo;
         QTimer *timer;
 
@@ -46,6 +50,9 @@ private slots:
         void minSteeringClicked();
         void centerSteeringClicked();
         void pollNodeHandle();
+        void automapControlClicked();
+        void automapSensingClicked();
+        void automapNBVClicked();
 };
 
 #endif // DASHBOARD_H
