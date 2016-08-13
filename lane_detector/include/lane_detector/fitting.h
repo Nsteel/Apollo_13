@@ -11,13 +11,13 @@
 #include <lane_detector/DetectorConfig.h>
 #include <cv.h>
 #include <lane_detector/LaneDetector.hh>
-#include <lane_detector/LaneDetectorOpt.h>
 #include <lane_detector/utils.h>
 #include <lane_detector/InversePerspectiveMapping.hh>
 #include <lane_detector/fittingApproach.h>
 #include <lane_detector/lane_tracker/Ctracker.h>
 #include <lane_detector/Lane.h>
 #include <geometry_msgs/Point32.h>
+#include <lane_detector/splineCombination.h>
 
 class Fitting {
 public:
@@ -40,13 +40,14 @@ public:
         }
         lane_detector::Lane fitting(cv::Mat& original, cv::Mat& preprocessed, LaneDetector::IPMInfo& ipmInfo, std::vector<LaneDetector::Box>& boxes);
 private:
-        void findCurrentLane(const std::vector<cv::Point2f>& centroids, std::vector<cv::Point2f>& current_lane);
-        float calcCost(std::vector<cv::Point2f>& combination);
+        void findCurrentLane(const std::vector<cv::Point2f>& centroids, const std::vector<std::vector<cv::Point>>& splines,  SplineCombination& current_lane, cv::Mat& image);
+        float calcCost(SplineCombination& combination);
         lane_detector::DetectorConfig config;
         LaneDetector::LaneDetectorConf lanesConf;
         LaneDetector::IPMInfo ipmInfo;
         CTracker tracker;
         lane_detector::Driving driving_orientation;
+        SplineCombination last_lane;
 };
 
 #endif /* FITTING_H_ */

@@ -4,6 +4,8 @@
 
 	<arg name="dashboard" default="false"/>
 	<arg name="rviz" default="true"/>
+	<arg name="kinect2" default="true" />
+	<arg name="kinect1" default="false" />
 
 	<!-- Set the robot model -->
 	<param name="robot_description" textfile="$(find simulation)/data/urdf_model/apollo_13.urdf"/>
@@ -11,7 +13,6 @@
 	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
 
 	<node pkg="apollo_13" type="lane_follower" name="lane_follower" output="screen"/>
-	<node pkg="lane_detector" type="lane_detector" name="lane_detector" output="screen" launch-prefix="xterm -e gdb --args"/>
 
 	<!-- Set params -->
 	<!-- node name="dynamic_reconfigure_load" pkg="dynamic_reconfigure" type="dynparam" args="load lane_detector $(find lane_detector)/cfg/lane_detector_params.yaml" / -->
@@ -25,23 +26,40 @@
 	<node pkg="tf" type="static_transform_publisher" name="right_us_broadcaster" args="0 -0.1 -0.06 -1.57 0 0 base_link right_sensor 10" />
 
 	<!-- Run the necessary nodes to bring up the car -->
-	<node pkg="apollo_13" type="apollo_13" name="apollo_13" output ="screen" />
+	<!-- node pkg="apollo_13" type="apollo_13" name="apollo_13" output ="screen" / -->
 	<node pkg="car_handler" type="car_handler_node" name="car_handler" />
 	<node pkg="car_handler" type="car_arduino" name="car_arduino" output="screen" />
+	<include file="$(find apollo_13)/launch/complementary_filter.launch" />
 
 	<!-- Run RosOSC -->
 	<include file="$(find apollo_13)/launch/interaction.launch" />
 
-	<!-- Bring up the Kinect -->
-	<include file="$(find apollo_13)/launch/freenect.launch" />
-	<node name="kinect_throttler" type="throttle" pkg="topic_tools" args="messages /camera/rgb/image_rect_mono 30 /kinect_mono_throttled" />
+	<group if="$(arg kinect1)">
+		<!-- Bring up lane detector -->
+		<node pkg="lane_detector" type="lane_detector" name="lane_detector" output="screen">
+			<remap from="camera_info" to="/camera/rgb/camera_info"/>
+		</node>
+		<!-- Bring up the Kinect -->
+		<include file="$(find apollo_13)/launch/freenect.launch" />
+		<node name="kinect_throttler" type="throttle" pkg="topic_tools" args="messages /camera/rgb/image_rect_mono 30 /kinect_mono_throttled" />
+	</group>
+
+	<group if="$(arg kinect2)">
+		<!-- Bring up lane detector -->
+		<node pkg="lane_detector" type="lane_detector" name="lane_detector" output="screen">
+			<remap from="camera_info" to="/kinect2/qhd/camera_info"/>
+		</node>
+			<!-- Bring up the Kinect -->
+		<include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch" />
+		<node name="kinect_throttler" type="throttle" pkg="topic_tools" args="messages /kinect2/qhd/image_color_rect 30 /kinect_mono_throttled" />
+	</group>
 
 	<!-- Run the navigation stack -->
-		<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen" >
+		<node pkg="move_base" type="move_base" respawn="false" name="move_base">
 
 			<!-- Planners -->
 			<!-- param name="base_local_planner" value="pose_follower/PoseFollower" / -->
-			<param name="base_global_planner" value="global_planner/GlobalPlanner" />
+			<param name="base_global_planner" value="global_planner/GlobalPlannerAdapter" />
 			<param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
 			<!-- Costmap parameters -->
 			<rosparam file="$(find apollo_13)/config/costmap_common_params_simulation.yaml" command="load" ns="global_costmap"/>

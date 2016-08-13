@@ -59,7 +59,6 @@
   <run_depend>tf</run_depend>
   <run_depend>nav_core</run_depend>
   <run_depend>libpcl-all</run_depend>
-  <run_depend>simulation</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

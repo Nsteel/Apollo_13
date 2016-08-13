@@ -4,7 +4,7 @@
  * \date 11/29/2006
  */
 
-#include "mcv.hh"
+#include <lane_detector/mcv.hh>
 
 #include <iostream>
 #include <math.h>
