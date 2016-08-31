@@ -2,7 +2,7 @@
 <launch>
 
 	<arg name="dashboard" default="false"/>
-	<arg name="rviz" default="true"/>
+	<arg name="rviz" default="false"/>
 
 	<!-- Set static tf transformations -->
 	<node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 map odom 10"/>
