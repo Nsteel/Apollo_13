@@ -13,7 +13,7 @@ ExplorationPlanner::ExplorationPlanner(const PathtransformPlanner * planner, con
         globalDetector = FrontierDetector(freeColor, unknownColor, occupiedColor);
 }
 
-bool ExplorationPlanner::findBestPlanSimple(const cv::Mat& occupancyGrid, const cv::Point& robotGridPos, const double robotYaw){
+bool ExplorationPlanner::findBestPlan(const cv::Mat& occupancyGrid, const cv::Point& robotGridPos, const double robotYaw, bool useNBV){
 
         this->robotYaw = robotYaw/CV_PI*180.0;
         this->occupancyGrid = occupancyGrid;
@@ -21,9 +21,9 @@ bool ExplorationPlanner::findBestPlanSimple(const cv::Mat& occupancyGrid, const 
         validFrontiers = std::list<Frontier>();
         frontierStack = std::list<Frontier>();
         std::cout<<"trying local ..."<<std::endl;
-        if(!extractValidFrontiersLocal()) {
+        if(!extractValidFrontiersLocal(useNBV)) {
                 std::cout<<"Local didn't work, trying global ..."<<std::endl;
-                if(!extractValidFrontiersGlobal()) {
+                if(!extractValidFrontiersGlobal(useNBV)) {
                         std::cout<<"Global didn't work, exit !"<<std::endl;
                         return false;
                 }
@@ -76,7 +76,7 @@ nav_msgs::Path ExplorationPlanner::getBestPlan(std_msgs::Header& h){
         return path;
 }
 
-bool ExplorationPlanner::extractValidFrontiersLocal(){
+bool ExplorationPlanner::extractValidFrontiersLocal(bool useNBV){
         cv::Rect baseWindow(0, 0, occupancyGrid.rows, occupancyGrid.cols);
         rollingWindow.x = robotGridPos.x-rollingWindow.width/2;
         rollingWindow.y = robotGridPos.y-rollingWindow.height/2;
@@ -109,7 +109,9 @@ bool ExplorationPlanner::extractValidFrontiersLocal(){
                 if(radius>minL) { // i think this should only be the distance of the 2 outer points
                         cv::Point centroidGlobal = calcFrontierCentroid(globalFp);
                         double frontierYaw = calcFrontierColorGradient(globalFp); // this is quite accurate but not very smart
-                        //centroidGlobal = shiftCentroid(centroidGlobal, frontierYaw); // this prevents centroids in unknown but also not very smart
+                        if(!useNBV){
+                          centroidGlobal = shiftCentroid(centroidGlobal, frontierYaw); // this prevents centroids in unknown but also not very smart
+                        }
                         cv::Point2f centroidWorld = gridPtToWorld(centroidGlobal);
                         passableFrontiers.push_back(Frontier(globalFp, centroidGlobal, centroidWorld, length, frontierYaw));
                 }
@@ -122,11 +124,15 @@ bool ExplorationPlanner::extractValidFrontiersLocal(){
         for(auto current : passableFrontiers) {
                 if(!checkProximitryToFrontier(current)) {
                         try{
-                                //Path p = planner->findPath(current.getCentroidGrid());
-                                //current.setPath(p);
-                                //
-                                //current.setScore(calcScoreSimple(current));
-                                calcScoreNBV(current);
+                                if(!useNBV){
+                                  Path p = planner->findPath(current.getCentroidGrid());
+                                  current.setPath(p);
+                                  current.setScore(calcScoreSimple(current));
+                                }
+                                else{
+                                  calcScoreNBV(current);
+                                }
+
 
 
                                 frontierStack.push_back(current);
@@ -152,7 +158,7 @@ bool ExplorationPlanner::extractValidFrontiersLocal(){
 
 }
 
-bool ExplorationPlanner::extractValidFrontiersGlobal(){
+bool ExplorationPlanner::extractValidFrontiersGlobal(bool useNBV){
         //1.) find all frontiers
         validFrontiers = std::list<Frontier>();
         globalDetector.processFrontiers(occupancyGrid);
@@ -175,7 +181,9 @@ bool ExplorationPlanner::extractValidFrontiersGlobal(){
                 if(radius>minL) { // i think this should only be the distance of the 2 outer points
                         cv::Point centroidGlobal = calcFrontierCentroid(current);
                         double frontierYaw = calcFrontierColorGradient(current); // this is quite accurate but not very smart
-                        //centroidGlobal = shiftCentroid(centroidGlobal, frontierYaw); // this prevents centroids in unknown but also not very smart
+                        if(!useNBV){
+                          centroidGlobal = shiftCentroid(centroidGlobal, frontierYaw); // this prevents centroids in unknown but also not very smart
+                        }
                         cv::Point2f centroidWorld = gridPtToWorld(centroidGlobal);
                         passableFrontiers.push_back(Frontier(current, centroidGlobal, centroidWorld, length, frontierYaw));
                 }
@@ -188,12 +196,14 @@ bool ExplorationPlanner::extractValidFrontiersGlobal(){
         for(auto current : passableFrontiers) {
                 if(!checkProximitryToFrontier(current)) {
                         try{
-                                //Path p = planner->findPath(current.getCentroidGrid());
-                                //current.setPath(p);
-                                //
-                                //current.setScore(calcScoreSimple(current));
+                                if(!useNBV){
+                                  Path p = planner->findPath(current.getCentroidGrid());
+                                  current.setPath(p);
+                                  current.setScore(calcScoreSimple(current));
 
-                                calcScoreNBV(current);
+                                }else{
+                                  calcScoreNBV(current);
+                                }
 
                                 validFrontiers.push_back(current);
                                 //
@@ -254,15 +264,57 @@ void ExplorationPlanner::calcScoreNBV(Frontier& f) const {
         double bestYaw = yaw;
         cv::Point bestCentroid = centroid;
 
-        cv::RNG rng(cv::getTickCount());
+        //fallback strategy if frontier doesn't fit fov:
+        double bestFit = 0;
+        bool fittingFrontierFound = false;
+        double bestFitAngle;
+        cv::Point bestFitPoint;
+
         //Generate and evaluate n random points in close proximitry to the frontier
-        for (int i = 0; i < 50; i++) {
+        cv::RNG rng(cv::getTickCount());
+        std::vector<cv::Point> potSensingPositions = getNRandomPoints(centroid, &rng, 1, 6, 10);
+
+        for(auto current : potSensingPositions) {
+                int nAngles = 180.0 / 5.0;
+
+                double angle = correctYawAngle(yaw, -90.0 / 2.0);
+                //double angle = 0;
+                for (int a = 0; a < nAngles; a++) {
+                        double quality = isInView(f.getPoints(), current, angle, 90.0, 120.0);
+                        //std::cout<<"in view.."<<quality<<std::endl;
+                        //if(quality >= (1.0-0.3) && quality <= 1.0) {
+                        if(quality >= 1.0) {
+                                double score = calcInformationGain(current, angle, 90.0, 0.5, 120.0);
+                                if (score > bestScore) {
+                                        bestScore = score;
+                                        bestCentroid = current;
+                                        bestYaw = angle;
+                                }
+                                fittingFrontierFound = true;
+
+                        }else{
+                                if(quality>bestFit) {
+                                        bestFit = quality;
+                                        bestFitAngle = angle;
+                                        bestFitPoint = current;
+                                }
+                        }
+                        angle = correctYawAngle(angle, 5.0);
+
+
+                }
+        }
+
+        /*
+           for (int i = 0; i < 50; i++) {
                 double r = rng.uniform(20.0, 120.0); //60pxls means 2meters, based on the max view distance -> still hard code
                 //double phi = correctYawAngle(yaw, rng.uniform(0.0, 90.0)-45.0)/180.0*CV_PI;
                 double phi = CV_PI * rng.uniform(0.0, 2.0);
                 int y = r * cv::sin(phi) + centroid.y;
                 int x = r * cv::cos(phi) + centroid.x;
                 //cout<<current.getCentroid()<<" --- "<<x<<" // "<<y<<" ---- " << map.cols<<" // " << map.rows<<endl;
+
+
                 if (x < occupancyGrid.cols && y < occupancyGrid.rows && x >= 0 && y >= 0) {
                         cv::Point p(x, y);
 
@@ -276,15 +328,22 @@ void ExplorationPlanner::calcScoreNBV(Frontier& f) const {
                                 for (int a = 0; a < nAngles; a++) {
                                         double quality = isInView(f.getPoints(), p, angle, 90.0, 120.0);
                                         std::cout<<"in view.."<<quality<<std::endl;
-                                        if(quality >= (1.0-0.3) && quality <= 1.0) {
-
+                                        //if(quality >= (1.0-0.3) && quality <= 1.0) {
+                                        if(quality >= 1.0) {
                                                 double score = calcInformationGain(p, angle, 90.0, 0.5, 120.0);
                                                 if (score > bestScore) {
                                                         bestScore = score;
                                                         bestCentroid = p;
                                                         bestYaw = angle;
                                                 }
+                                                fittingFrontierFound = true;
 
+                                        }else{
+                                                if(quality>bestFit) {
+                                                        bestFit = quality;
+                                                        bestFitAngle = angle;
+                                                        bestFitPoint = p;
+                                                }
                                         }
                                         angle = correctYawAngle(angle, 5.0);
 
@@ -293,12 +352,37 @@ void ExplorationPlanner::calcScoreNBV(Frontier& f) const {
 
                         }
                 }
+
+           }
+         */
+        if(!fittingFrontierFound) {
+                bestScore = calcInformationGain(bestFitPoint, bestFitAngle, 90.0, 0.5, 120.0);
+                bestYaw = bestFitAngle;
+                bestCentroid = bestFitPoint;
         }
 
         f.setScore(bestScore);
         f.setFrontierYaw(bestYaw);
         f.setCentroidGrid(bestCentroid);
         f.setPath(planner->findPath(bestCentroid));
+}
+
+std::vector<cv::Point> ExplorationPlanner::getNRandomPoints(const cv::Point& frontierCentroid, cv::RNG* rngSeed, double innerRadius, double outerRadius, int n) const {
+        std::vector<cv::Point> vectorOfPoints;
+        int inner = innerRadius/mapInfo.resolution;
+        int outer = outerRadius/mapInfo.resolution;
+        while(vectorOfPoints.size()<n) {
+                double r = rngSeed->uniform(inner, outer);
+                double phi = CV_PI * rngSeed->uniform(0.0, 2.0);
+                int y = r * cv::sin(phi) + frontierCentroid.y;
+                int x = r * cv::cos(phi) + frontierCentroid.x;
+                cv::Point p(x, y);
+                if (p.x < occupancyGrid.cols && p.y < occupancyGrid.rows && p.x >= 0 && p.y >= 0 && occupancyGrid.at<uchar>(p) == PTP::FREE_CELL_COLOR) {
+                        vectorOfPoints.push_back(p);
+                }
+        }
+        return vectorOfPoints;
+
 }
 
 double ExplorationPlanner::isInView(const std::vector<cv::Point>& pts, const cv::Point& start, double yaw, double FOV, double maxDistance) const {
@@ -441,7 +525,11 @@ double ExplorationPlanner::calcInformationGain(const cv::Point& start, double ya
                  */
                 //return n;
                 //return cv::norm(original, temp, CV_L2) * cv::exp(1.0/(1.0+distance) + (180.0-std::fabs(dTh))/180);
-                return n * cv::exp(-0.1*distance) * (180.0-std::fabs(dTh))/180;
+                if(distance<=8.0) {
+                        return n * cv::exp(-0.1*distance) *  (180.0-std::fabs(dTh))/180;
+                }else{
+                        return n * cv::exp(-0.1*distance);
+                }
         }catch(std::exception& e) {
                 //std::cout<<e.what()<<std::endl;
                 return -1;
