@@ -26,7 +26,7 @@
 #include <nav_msgs/Path.h>
 #include <tf/transform_listener.h>
 #include<std_msgs/Int32.h>
-
+#include<limits>
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
@@ -171,7 +171,36 @@ void laneCB2(const lane_detector::Lane::ConstPtr& lane) {
     double yaw = std::atan2(lane->guide_line.back().y, lane->guide_line.back().x) * 180/CV_PI;
     int steering = angleToSteering(yaw);
     steering_msg.data = steering;
-    ROS_INFO("Steering Angle: %i", steering);
+    ROS_DEBUG("Steering Angle: %i", steering);
+  }
+}
+
+void laneCB3(const lane_detector::Lane::ConstPtr& lane) {
+  if(lane->guide_line.size() >= 4) {
+		int index = (lane->guide_line.size()-1)*0.5;
+		double x_mid = lane->guide_line[index].x;
+		double y_mid = lane->guide_line[index].y;
+		index = (lane->guide_line.size()-1)*0.3333;
+		double x1 = lane->guide_line[index].x;
+		double y1 = lane->guide_line[index].y;
+		index = (lane->guide_line.size()-1)*0.6666;
+		double x2 = lane->guide_line[index].x;
+		double y2 = lane->guide_line[index].y;
+
+		double dx = (x2 - x1)/(y2 - y1 + std::numeric_limits<double>::epsilon());
+		double dy = (y2 - y1)/(x2 - x1 + std::numeric_limits<double>::epsilon());
+		double tmp = y2 - y_mid;
+		double ddx = (x2 - (2.0*x_mid) + x1)/(tmp*tmp + std::numeric_limits<double>::epsilon());
+		tmp = x2 - x_mid;
+		double ddy = (y2 - (2.0*y_mid) + y1)/(tmp*tmp + std::numeric_limits<double>::epsilon());
+		double num = std::pow(1.0 + dx*dx, 1.5);
+		double den = ddx;
+		double r = num/(den + std::numeric_limits<double>::epsilon());
+
+		double yaw = std::atan2(0.25, std::sqrt(r*r - 0.25))*180/CV_PI;
+		int steering = angleToSteering(yaw);
+
+    std::cout << "dx: " << dx << " dy: " << dy << " r: " << r << " alpha: " << yaw << " steering: " << steering << std::endl;
   }
 }
 
@@ -214,6 +243,7 @@ int main(int argc, char **argv){
      //image_transport::Subscriber pointCloud_sub = it.subscribe("camera/depth/image_raw", 1, readPointCloud);
      //ros::Subscriber lane_sub = nh.subscribe<lane_detector::Lane>("/lane_detector/lane", 1, std::bind(laneCB, std::placeholders::_1, &listener, &ac));
      ros::Subscriber lane_sub = nh.subscribe<lane_detector::Lane>("/lane_detector/lane", 1, std::bind(laneCB2, std::placeholders::_1));
+		 //ros::Subscriber lane_sub = nh.subscribe<lane_detector::Lane>("/lane_detector/lane", 1, std::bind(laneCB3, std::placeholders::_1));
      obstacles_pub = nh.advertise<teb_local_planner::ObstacleMsg>("/move_base/TebLocalPlannerROS/obstacles", 10);
      path_pub = nh.advertise<nav_msgs::Path>("/pathtransformPlanner/path", 10);
      ros::Publisher motorControl_pub = nh.advertise<std_msgs::Int32>("car_handler/motor", 10);

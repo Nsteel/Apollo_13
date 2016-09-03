@@ -11,9 +11,10 @@
 	<include file="$(find simulation)/launch/simulation_lane_follower.launch" />
 	<!-- Bring up the Kinect -->
 	<!-- node pkg="lane_detector" type="camera_simulator" name="camera_simulator" /-->
+	<!--
 	<node pkg="image_view" type="image_view" name="image_viewer">
 		<remap from="image" to="/lane_detector/result"/>
-	</node>
+	</node> -->
 	<node name="kinect_throttler" type="throttle" pkg="topic_tools" args="messages /camera/rgb/image_rect_mono 30 /kinect_mono_throttled" />
 
 	<!-- Run the navigation stack -->
