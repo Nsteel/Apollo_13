@@ -10,11 +10,13 @@ Panels:
         - /LaserScan1
         - /Pose1
         - /Path1
+        - /Path2
         - /Map1
         - /Map2
         - /Map3
         - /PoseArray1
         - /Marker1
+        - /Marker2
       Splitter Ratio: 0.5
     Tree Height: 746
   - Class: rviz/Selection
@@ -83,6 +85,7 @@ Visualization Manager:
       Size (m): 0.01
       Style: Points
       Topic: /scan
+      Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -104,6 +107,7 @@ Visualization Manager:
       Name: Range
       Queue Size: 100
       Topic: /front_us_range
+      Unreliable: false
       Value: true
     - Alpha: 0.5
       Buffer Length: 1
@@ -113,6 +117,7 @@ Visualization Manager:
       Name: Range
       Queue Size: 100
       Topic: /left_us_range
+      Unreliable: false
       Value: true
     - Alpha: 0.5
       Buffer Length: 1
@@ -122,6 +127,7 @@ Visualization Manager:
       Name: Range
       Queue Size: 100
       Topic: /right_us_range
+      Unreliable: false
       Value: true
     - Alpha: 1
       Class: rviz/RobotModel
@@ -133,6 +139,74 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        base_footprint:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_laser:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        front_left_steering:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        front_left_wheel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        front_right_steering:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        front_right_wheel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        front_sensor:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_sensor:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        rear_left_wheel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        rear_right_wheel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_sensor:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        scan:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        steering_servo:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -152,27 +226,30 @@ Visualization Manager:
       Shaft Radius: 0.05
       Shape: Arrow
       Topic: /move_base/current_goal
-      Value: true
-    - Alpha: 1
-      Axes Length: 1
-      Axes Radius: 0.1
-      Class: rviz/Pose
-      Color: 255; 25; 0
-      Enabled: true
-      Head Length: 0.3
-      Head Radius: 0.1
-      Name: Pose
-      Shaft Length: 1
-      Shaft Radius: 0.05
-      Shape: Arrow
-      Topic: /move_base_simple/goal
+      Unreliable: false
       Value: true
     - Alpha: 1
       Class: rviz/Polygon
       Color: 25; 255; 0
-      Enabled: true
+      Enabled: false
       Name: Polygon
       Topic: /move_base/global_costmap/footprint
+      Unreliable: false
+      Value: false
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 255; 255; 0
+      Enabled: true
+      Line Style: Lines
+      Line Width: 0.03
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Topic: /move_base/TebLocalPlannerROS/local_plan
+      Unreliable: false
       Value: true
     - Alpha: 1
       Buffer Length: 1
@@ -186,29 +263,17 @@ Visualization Manager:
         X: 0
         Y: 0
         Z: 0
-      Topic: /move_base/SBPLLatticePlanner/plan
+      Topic: /move_base/GlobalPlanner/plan
+      Unreliable: false
       Value: true
     - Alpha: 1
-      Buffer Length: 1
-      Class: rviz/Path
-      Color: 25; 255; 0
-      Enabled: true
-      Line Style: Lines
-      Line Width: 0.03
-      Name: Path
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Topic: /move_base/TrajectoryPlannerROS/global_plan
-      Value: true
-    - Alpha: 0.7
       Class: rviz/Map
       Color Scheme: costmap
       Draw Behind: false
       Enabled: true
       Name: Map
       Topic: /move_base/local_costmap/costmap
+      Unreliable: false
       Value: true
     - Alpha: 0.7
       Class: rviz/Map
@@ -217,39 +282,36 @@ Visualization Manager:
       Enabled: true
       Name: Map
       Topic: /map
+      Unreliable: false
       Value: true
-    - Alpha: 0.5
+    - Alpha: 1
       Class: rviz/Map
       Color Scheme: costmap
       Draw Behind: false
       Enabled: true
       Name: Map
       Topic: /move_base/global_costmap/costmap
+      Unreliable: false
       Value: true
     - Arrow Length: 0.3
       Class: rviz/PoseArray
       Color: 0; 0; 255
-      Enabled: false
+      Enabled: true
       Name: PoseArray
-      Topic: /particlecloud
-      Value: false
-    - Alpha: 1
-      Axes Length: 1
-      Axes Radius: 0.1
-      Class: rviz/Pose
-      Color: 255; 25; 0
-      Enabled: false
-      Head Length: 0.3
-      Head Radius: 0.1
-      Name: Pose
-      Shaft Length: 1
-      Shaft Radius: 0.05
-      Shape: Axes
-      Topic: /ar_multi_boards/pose
-      Value: false
+      Topic: /move_base/TebLocalPlannerROS/teb_poses
+      Unreliable: false
+      Value: true
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /car_aruco/rviz_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /move_base/TebLocalPlannerROS/teb_markers
       Name: Marker
       Namespaces:
         {}
@@ -279,22 +341,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 23.8717
+      Distance: 2.07734
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
+        X: 0.196766
+        Y: 0.43476
+        Z: 0.165266
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.939797
+      Pitch: 1.2298
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.2104
+      Yaw: 4.1604
     Saved: ~
 Window Geometry:
   Displays:

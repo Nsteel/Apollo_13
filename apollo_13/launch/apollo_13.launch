@@ -7,12 +7,18 @@
 	<arg name="kinect2" default="true" />
 	<arg name="kinect1" default="false" />
 
-	<!-- Set static tf transformations -->
+	<!-- Set the robot model -->
+	<param name="robot_description" textfile="$(find simulation)/data/urdf_model/apollo_13.urdf"/>
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
+	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+
+	<!-- Set static tf transformations
 	<node pkg="tf" type="static_transform_publisher" name="base_footprint_broadcaster" args="0 0 0.10 0 0 0 base_footprint base_link 10"/>
 	<node pkg="tf" type="static_transform_publisher" name="base_laser_broadcaster" args="0.18 0 0.34 0 0 0 1 base_link base_laser 10" />
 	<node pkg="tf" type="static_transform_publisher" name="front_us_broadcaster" args="0.175 0 -0.06 0 0 0 1 base_link front_sensor 10" />
 	<node pkg="tf" type="static_transform_publisher" name="left_us_broadcaster" args="0 0.1 -0.06 1.57 0 0 base_link left_sensor 10" />
 	<node pkg="tf" type="static_transform_publisher" name="right_us_broadcaster" args="0 -0.1 -0.06 -1.57 0 0 base_link right_sensor 10" />
+	-->
 
 	<!-- Run the necessary nodes to bring up the car -->
 	<node pkg="apollo_13" type="apollo_13" name="apollo_13" output ="screen" />
@@ -48,7 +54,6 @@
 					<!-- Convert the kinect point cloud to a laserscan message -->
 					<node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan">
 						<remap from="image" to="/camera/depth/image_raw" />
-						<param name="output_frame_id" value="base_laser" />
 						<param name="output_frame_id" value="base_laser" />
 						<param name="range_max" value="6.0" />
 						<param name="range_min" value="0.80" />

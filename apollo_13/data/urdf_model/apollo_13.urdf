@@ -1,11 +1,20 @@
 <?xml version="1.0"?>
 <robot name="blinky">
-  <link name="base_footprint" />
+  <link name="base_footprint">
+    <visual>
+      <geometry>
+        <box size=".40 .20 0"/>
+      </geometry>
+      <material name="nothing">
+        <color rgba="0 0 0 0"/>
+      </material>
+    </visual>
+  </link>
 
   <link name="base_link">
     <visual>
       <geometry>
-        <box size=".46 .33 .18"/>
+        <box size=".40 .20 .18"/>
       </geometry>
       <material name="red">
         <color rgba="0 0 .8 .3"/>
@@ -18,6 +27,92 @@
     <child link="base_link"/>
     <origin xyz="0 0 .1"/>
   </joint>
+
+  <link name="base_laser">
+    <visual>
+      <geometry>
+        <box size=".066 .24 .066"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 .7"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="base_laser_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="base_laser"/>
+    <origin xyz=".18 0 .1"/>
+  </joint>
+
+  <link name="front_sensor">
+    <visual>
+      <geometry>
+        <box size=".05 .05 .05"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 .3"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="front_sensor_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="front_sensor"/>
+    <origin xyz=".175 0 -.06"/>
+  </joint>
+
+  <link name="left_sensor">
+    <visual>
+      <geometry>
+        <box size=".05 .05 .05"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 .3"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="left_sensor_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="left_sensor"/>
+    <origin xyz="0 .1 -.06" rpy="0 0 1.57"/>
+  </joint>
+
+  <link name="right_sensor">
+    <visual>
+      <geometry>
+        <box size=".05 .05 .05"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 .3"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="right_sensor_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="right_sensor"/>
+    <origin xyz="0 -.1 -.06" rpy="0 0 -1.57"/>
+  </joint>
+
+  <link name="scan">
+    <visual>
+      <geometry>
+        <box size="0 0 0"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 0"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="scan_joint" type="fixed">
+    <parent link="base_laser"/>
+    <child link="scan"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+
 
   <link name="rear_right_wheel">
     <visual>
@@ -82,7 +177,7 @@
   </joint>
 
   <link name="front_left_steering"/>
- 
+
   <joint name="front_left_steering_joint" type="revolute">
     <limit lower="-1.57075" upper="1.57075" effort="-1" velocity="-1"/>
     <axis xyz="0 0 1"/>
@@ -184,4 +279,3 @@
     </actuator>
   </transmission>
 </robot>
-
