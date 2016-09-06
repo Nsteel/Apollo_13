@@ -4,12 +4,14 @@
 #include <nav_msgs/MapMetaData.h>
 #include <iostream>
 #include <tf/transform_listener.h>
-#include <Raycaster.h>
 #include <string>
 #include <vector>
 #include <stdexcept>
 #include <sensor_msgs/Range.h>
 #include <yaml-cpp/yaml.h>
+#include <RangeSensor.h>
+#include <dynamic_reconfigure/server.h>
+#include <simulation/RangeSensorConfig.h>
 
 typedef std::shared_ptr<sensor_msgs::Range> scan_msg_ptr;
 typedef std::shared_ptr<geometry_msgs::Pose> pose_msg_ptr;
@@ -38,11 +40,11 @@ struct convert<geometry_msgs::Pose> {
 };
 }
 
-rc::vec2i_ptr setGridPosition(geometry_msgs::Pose& sensor, nav_msgs::MapMetaData& mapInfo){
+cv::Point setGridPosition(geometry_msgs::Pose& sensor, nav_msgs::MapMetaData& mapInfo){
         unsigned int grid_x = (unsigned int)((sensor.position.x - mapInfo.origin.position.x) / mapInfo.resolution);
         unsigned int grid_y = (unsigned int)((-sensor.position.y - mapInfo.origin.position.y) / mapInfo.resolution);
 
-        return std::make_shared<cv::Vec2i>(cv::Vec2i(grid_x, grid_y));
+        return cv::Point(grid_x, grid_y);
 }
 
 void getPositionInfo(const std::string& base_frame, const std::string& target_frame, const tf::TransformListener& listener, geometry_msgs::Pose * position, std::vector<double> * rpy){
@@ -84,10 +86,21 @@ void getPositionInfo(const std::string& base_frame, const std::string& target_fr
         }
 }
 
+void configCallback(simulation::RangeSensorConfig& config, uint32_t level, rs::RangeSensor* sensor, simulation::RangeSensorConfig* dynConfig)
+{
+        sensor->setConfig(config);
+        *dynConfig = config;
+        ROS_DEBUG("Config was set");
+}
+
 int main(int argc, char **argv){
 
         ros::init(argc, argv, "simulation_usscan");
         ros::NodeHandle nh;
+
+        dynamic_reconfigure::Server<simulation::RangeSensorConfig> server;
+        dynamic_reconfigure::Server<simulation::RangeSensorConfig>::CallbackType f;
+        simulation::RangeSensorConfig dynConfig;
 
         ros::Publisher front_us_range = nh.advertise<sensor_msgs::Range>("front_us_range", 10);
         ros::Publisher left_us_range = nh.advertise<sensor_msgs::Range>("left_us_range", 10);
@@ -107,61 +120,67 @@ int main(int argc, char **argv){
         // get "god" map
         std::string imagePath = ros::package::getPath("simulation") + "/data/map/map.pgm";
         cv::Mat map = cv::imread(imagePath,1);
+        cv::cvtColor(map, map, CV_RGB2GRAY);
 
-        // sensor object
-        rc::Raycaster rc_ussensor = rc::Raycaster(map, 0.05, 60.0, 45.0, 0.5);
+        // create sensor object and link with config object
+        rs::RangeSensor rs_sonar(rs::us);
+        rs_sonar.setMap(map);
+        rs_sonar.setMapMetaData(mapInfo);
+
+        f = boost::bind(&configCallback, _1, _2, &rs_sonar, &dynConfig);
+        server.setCallback(f);
 
         // variables needed for transformations
         tf::TransformListener listener;
         geometry_msgs::Pose position;
         std::vector<double> rpy(3, 0.0);
-        rc::vec2i_ptr gridPose;
+        cv::Point gridPose;
 
         ros::Time currentTime = ros::Time::now();
 
-        front_range.header.stamp = currentTime;
         front_range.header.frame_id = "front_sensor";
         front_range.radiation_type = 0;
-        front_range.field_of_view = rc::degToRad(45.0);
-        front_range.min_range = 0.00;
-        front_range.max_range = 2.7;
 
-        left_range.header.stamp = currentTime;
         left_range.header.frame_id = "left_sensor";
         left_range.radiation_type = 0;
-        left_range.field_of_view = rc::degToRad(45.0);
-        left_range.min_range = 0.0;
-        left_range.max_range = 2.7;
 
-        right_range.header.stamp = currentTime;
         right_range.header.frame_id = "right_sensor";
         right_range.radiation_type = 0;
-        right_range.field_of_view = rc::degToRad(45.0);
-        right_range.min_range = 0.00;
-        right_range.max_range = 2.7;
 
         // Loop starts here:
-        ros::Rate loop_rate(50);
+        ros::Rate loop_rate(30);
         while(ros::ok()) {
                 currentTime = ros::Time::now();
+
                 front_range.header.stamp = currentTime;
+                front_range.field_of_view = rs::degToRad(dynConfig.us_field_of_view);
+                front_range.min_range = dynConfig.us_min_sensor_distance;
+                front_range.max_range = dynConfig.us_max_sensor_distance;
+
                 left_range.header.stamp = currentTime;
+                left_range.field_of_view = rs::degToRad(dynConfig.us_field_of_view);
+                left_range.min_range = dynConfig.us_min_sensor_distance;
+                left_range.max_range = dynConfig.us_max_sensor_distance;
+
                 right_range.header.stamp = currentTime;
+                right_range.field_of_view = rs::degToRad(dynConfig.us_field_of_view);
+                right_range.min_range = dynConfig.us_min_sensor_distance;
+                right_range.max_range = dynConfig.us_max_sensor_distance;
 
                 //front sensor
                 getPositionInfo("map", "front_sensor", listener, &position, &rpy);
                 gridPose = setGridPosition(position, mapInfo);
-                front_range.range = rc_ussensor.getUsRangeInfo(gridPose, rc::radToDeg(rpy[2]));
+                front_range.range = rs_sonar.getUSScan(gridPose, rs::radToDeg(rpy[2]));
 
                 //left sensor
                 getPositionInfo("map", "left_sensor", listener, &position, &rpy);
                 gridPose = setGridPosition(position, mapInfo);
-                left_range.range = rc_ussensor.getUsRangeInfo(gridPose, rc::radToDeg(rpy[2]));
+                left_range.range = rs_sonar.getUSScan(gridPose, rs::radToDeg(rpy[2]));
 
                 //right sensor
                 getPositionInfo("map", "right_sensor", listener, &position, &rpy);
                 gridPose = setGridPosition(position, mapInfo);
-                right_range.range = rc_ussensor.getUsRangeInfo(gridPose, rc::radToDeg(rpy[2]));
+                right_range.range = rs_sonar.getUSScan(gridPose, rs::radToDeg(rpy[2]));
 
                 //publish sensor msgs
                 front_us_range.publish(front_range);

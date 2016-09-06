@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   tf
   message_generation
+  dynamic_reconfigure
 )
 find_package(OpenCV REQUIRED)
 #find_package(Qt5 REQUIRED COMPONENTS Core Gui)
@@ -103,10 +104,9 @@ set( QT_USE_QTXML TRUE )
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+ generate_dynamic_reconfigure_options(
+    cfg/RangeSensor.cfg
+ )
 
 ###################################
 ## catkin specific configuration ##
@@ -140,9 +140,9 @@ QT5_WRAP_UI(UIS_HDRS include/Dashboard.ui)
 #add_library(simulation
 #   src/${PROJECT_NAME}/src/simulation_control.cpp
 # )
+add_library(RANGE_SENSOR src/RangeSensor.cpp)
 add_library(CAR_MODEL src/CarModel.cpp)
 add_library(FWD_KINEMATICS src/ForwardKinematics.cpp)
-add_library(RAY_CAST src/Raycaster.cpp)
 add_library(DASH include/Dashboard.cpp ${UIS_HDRS})
 
 ## Add cmake target dependencies of the library
@@ -158,6 +158,9 @@ add_executable(dashboard_node src/simulation_dashboard.cpp ${UIS_HDRS})
 
 add_dependencies(simulation_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
 add_dependencies(simulation_node ${PROJECT_NAME}_gencpp)
+add_dependencies(scan_node ${PROJECT_NAME}_gencfg)
+add_dependencies(usrange_node ${PROJECT_NAME}_gencfg)
+add_dependencies(RANGE_SENSOR ${PROJECT_NAME}_gencfg)
 add_dependencies(DASH ${PROJECT_NAME}_gencpp)
 
 
@@ -171,10 +174,10 @@ add_dependencies(DASH ${PROJECT_NAME}_gencpp)
    ${catkin_LIBRARIES} CAR_MODEL FWD_KINEMATICS
  )
  target_link_libraries(scan_node
-   ${catkin_LIBRARIES} ${OpenCV_LIBS} RAY_CAST yaml-cpp
+   ${catkin_LIBRARIES} ${OpenCV_LIBS} yaml-cpp RANGE_SENSOR
  )
  target_link_libraries(usrange_node
-   ${catkin_LIBRARIES} ${OpenCV_LIBS} RAY_CAST yaml-cpp
+   ${catkin_LIBRARIES} ${OpenCV_LIBS} yaml-cpp RANGE_SENSOR
  )
 #target_link_libraries(dashboard_node ${catkin_LIBRARIES} ${Qt5_LIBRARIES} Qt5::Widgets Qt5::Core Qt5::Gui DASH)
 target_link_libraries(DASH Qt5::Widgets Qt5::Core Qt5::Gui)

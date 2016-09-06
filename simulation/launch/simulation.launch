@@ -13,7 +13,7 @@
 	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
 	<!-- Run the necessary nodes to bring up the car -->
 	<node pkg="simulation" type="simulation_node" name="simulation" output="screen"/>
-	<node pkg="simulation" type="scan_node" name="scan_simulation"/>
+	<node pkg="simulation" type="scan_node" name="scan_simulation" output="screen"/>
 	<node pkg="simulation" type="usrange_node" name="usrange_simulation"/>
 	<!-- Run the map server -->
 	<node name="map_server" pkg="map_server" type="map_server" args="$(find simulation)/data/map/map.yaml"/>

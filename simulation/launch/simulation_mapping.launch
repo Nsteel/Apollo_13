@@ -25,8 +25,8 @@
     <!-- <include file="$(find simulation)/launch/amcl.launch"/> -->
   	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping">
 	    <param name="scan" value="scan" />
-      <param name="maxUrange" value="5.5" />
-      <param name="maxRange" value="6.0" />
+      <param name="maxUrange" value="5.8" />
+      <param name="maxRange" value="6.7" />
       <param name="particles" value="120" />
       <param name="srr" value="0.0" />
       <param name="srt" value="0.0" />
