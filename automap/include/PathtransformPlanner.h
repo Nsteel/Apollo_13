@@ -11,6 +11,7 @@
 #include <cv.h>
 #include "Path.h"
 #include "PlannerException.h"
+#include <automap/ExplorationConfig.h>
 
 namespace PTP {
 const static int OCCUPIED_CELL_COLOR = 0;
@@ -20,12 +21,10 @@ const static int FREE_CELL_COLOR = 255;
 
 class PathtransformPlanner {
 public:
-								PathtransformPlanner();
-								PathtransformPlanner(PathtransformPlanner& other);
-								PathtransformPlanner(const double robotWidth, const double robotLength,
-																													const nav_msgs::MapMetaData& mapInfo, double accuracy=0.2, double minObstDistance=0.4, double alpha=0.4);
+								PathtransformPlanner(const nav_msgs::MapMetaData& mapInfo);
 
 								// getters and setters
+								void setConfig(automap::ExplorationConfig& config);
 								const cv::Rect getRobotFootprint() const;
 								void setRobotFootprint(const cv::Rect& robotFootprint);
 								const nav_msgs::MapMetaData& getMapInfo() const;
@@ -48,6 +47,7 @@ public:
 
 
 private:
+								automap::ExplorationConfig config;
 								nav_msgs::MapMetaData mapInfo;
 								double accuracy;
 								double minObstDistance;

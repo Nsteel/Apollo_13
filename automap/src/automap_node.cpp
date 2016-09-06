@@ -17,6 +17,8 @@
 #include <fstream>
 #include <simulation/telemetry_msg.h>
 #include <automap/automap_ctrl_msg.h>
+#include <dynamic_reconfigure/server.h>
+#include <automap/ExplorationConfig.h>
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
@@ -100,8 +102,7 @@ void getPositionInfo(const std::string& base_frame, const std::string& target_fr
         }
 }
 
-void sendGoal(nav_msgs::Path& p, MoveBaseClient& ac)
-{
+void sendGoal(nav_msgs::Path& p, MoveBaseClient& ac){
         move_base_msgs::MoveBaseGoal goal;
         goal.target_pose =p.poses[p.poses.size()-1];
 
@@ -110,10 +111,24 @@ void sendGoal(nav_msgs::Path& p, MoveBaseClient& ac)
         //ac.waitForResult();
 }
 
+void configCallback(automap::ExplorationConfig& config, uint32_t level, PathtransformPlanner* planner,
+  ExplorationPlanner* ePlanner, automap::ExplorationConfig* dynConfig){
+        planner->setConfig(config);
+        ePlanner->setConfig(config);
+        *dynConfig = config;
+        ROS_DEBUG("Config was set");
+}
+
 int main(int argc, char **argv){
 
         ros::init(argc, argv, "automap");
         ros::NodeHandle nh;
+
+        // create dynamic reconfigure object
+        dynamic_reconfigure::Server<automap::ExplorationConfig> server;
+        dynamic_reconfigure::Server<automap::ExplorationConfig>::CallbackType f;
+        automap::ExplorationConfig dynConfig;
+
         ros::Time initTime = ros::Time::now();
 
         nav_msgs::MapMetaData mapMetaData;
@@ -161,21 +176,24 @@ int main(int argc, char **argv){
                 ros::spinOnce();
         }
 
-        PathtransformPlanner pPlanner(0.25, 0.4, mapMetaData);
+        PathtransformPlanner pPlanner(mapMetaData);
         ExplorationPlanner ePlanner(&pPlanner);
 
+        f = boost::bind(&configCallback, _1, _2, &pPlanner, &ePlanner, &dynConfig);
+        server.setCallback(f);
+
         bool finished = false;
-        int retry = 5;
+        int retry = dynConfig.node_retries;
         cv::Mat old = cv::Mat::zeros(map.rows, map.cols, CV_8UC1);
         // Loop starts here:
-        ros::Rate loop_rate(1.0);
+        ros::Rate loop_rate(dynConfig.node_loop_rate);
         while(ros::ok() && !finished) {
                 double gain = cv::norm(old, map, CV_L2);
 
-                if(gain>2500.0 || retry==0) {
+                if(gain>dynConfig.node_information_gain || retry==0) {
                         ROS_INFO("Enough information gained: %lf",gain);
                         old = map.clone();
-                        retry = 5;
+                        retry = dynConfig.node_retries;
                         //Get Position Information...
                         getPositionInfo("map", "base_footprint", listener, &position, &rpy);
                         setGridPosition(position, mapMetaData, &gridPose);

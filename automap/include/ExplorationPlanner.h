@@ -10,11 +10,12 @@
 #include <nav_msgs/MapMetaData.h>
 #include <nav_msgs/Path.h>
 #include <list>
+#include <automap/ExplorationConfig.h>
 
 class ExplorationPlanner {
 public:
-        ExplorationPlanner(const PathtransformPlanner * planner, const int windowSize_x=600,
-                           const int windowSize_y=600);
+        ExplorationPlanner(const PathtransformPlanner * planner);
+        void setConfig(automap::ExplorationConfig& config);
         bool findBestPlan(const cv::Mat& occupancyGrid, const cv::Point& robotGridPos, const double robotYaw, bool useNBV);
         nav_msgs::Path getBestPlan(std_msgs::Header& h);
         cv::Mat drawFrontiers();
@@ -22,6 +23,7 @@ public:
 
 private:
         const PathtransformPlanner* planner;
+        automap::ExplorationConfig config;
         nav_msgs::MapMetaData mapInfo;
         cv::Rect robotFootprint;
         cv::Rect rollingWindow;
@@ -42,12 +44,9 @@ private:
 
         bool extractValidFrontiersLocal(bool useNBV);
         bool extractValidFrontiersGlobal(bool useNBV);
-        void scoreValidFrontiersSimple();
-        void extractBestFrontier();
 
         frontierPoints localPtsToGlobal(const frontierPoints& points) const;
         cv::Point2f gridPtToWorld(const cv::Point& point) const;
-        double calcFrontierLength(const frontierPoints& points) const;
         double calcScoreSimple(const Frontier& f) const;
         void calcScoreNBV(Frontier& f) const;
         std::vector<cv::Point> getNRandomPoints(const cv::Point& frontierCentroid, cv::RNG* rngSeed, double innerRadius, double outerRadius, int n) const;
@@ -60,7 +59,6 @@ private:
 
         int makeYaw(const int angle) const;
         double makeYaw(const double angle) const;
-        //int correctYawAngle(const int theta, const int increment) const;
         double correctYawAngle(const double theta, const double increment) const;
 
 };

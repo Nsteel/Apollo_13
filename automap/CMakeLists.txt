@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   rospack
   simulation
+  dynamic_reconfigure
 )
 find_package(PCL REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -96,10 +97,9 @@ find_package(OpenCV REQUIRED)
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+ generate_dynamic_reconfigure_options(
+   cfg/Exploration.cfg
+ )
 
 ###################################
 ## catkin specific configuration ##
@@ -151,7 +151,10 @@ add_library(GLOBAL_PLANNER src/GlobalPlannerAdapter.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
- add_dependencies(automap_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+ add_dependencies(automap_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} _gencfg)
+ add_dependencies(F_DETECTOR ${PROJECT_NAME}_gencfg)
+ add_dependencies(E_PLANNER ${PROJECT_NAME}_gencfg)
+ add_dependencies(PLANNER ${PROJECT_NAME}_gencfg)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(F_DETECTOR ${catkin_LIBRARIES})

@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <cv.h>
+#include <automap/ExplorationConfig.h>
 
 typedef std::vector< std::vector<cv::Point> > contours;
 
@@ -11,7 +12,8 @@ class FrontierDetector {
 public:
                 FrontierDetector();
                 FrontierDetector(const FrontierDetector& other);
-								FrontierDetector(const int freeColor, const int unknownColor, const int occupiedColor, const int dilateRate=3, const int blurKernel=5);
+                FrontierDetector(const int freeColor, const int unknownColor, const int occupiedColor);
+                void setConfig(automap::ExplorationConfig& config);
                 void processFrontiers(const cv::Mat& occupancyGrid);
                 const contours& getFrontiers() const;
 
@@ -19,6 +21,7 @@ private:
                 int freeColor;
                 int unknownColor;
                 int occupiedColor;
+                automap::ExplorationConfig config;
                 int dilateRate;
                 int blurKernel;
 

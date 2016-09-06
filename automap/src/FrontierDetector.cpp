@@ -4,13 +4,23 @@ FrontierDetector::FrontierDetector(){
 }
 
 FrontierDetector::FrontierDetector(const FrontierDetector& other) :
-        freeColor(other.freeColor), unknownColor(other.unknownColor), occupiedColor(other.occupiedColor), dilateRate(other.dilateRate), blurKernel(other.blurKernel){
+        freeColor(other.freeColor), unknownColor(other.unknownColor), occupiedColor(other.occupiedColor), config(other.config),
+        dilateRate(other.dilateRate), blurKernel(other.blurKernel){
         detectedFrontiers = contours();
 }
 
-FrontierDetector::FrontierDetector(const int freeColor, const int unknownColor, const int occupiedColor, const int dilateRate, const int blurKernel) :
-        freeColor(freeColor), unknownColor(unknownColor), occupiedColor(occupiedColor), dilateRate(dilateRate), blurKernel(blurKernel){
+FrontierDetector::FrontierDetector(const int freeColor, const int unknownColor, const int occupiedColor) :
+        freeColor(freeColor), unknownColor(unknownColor), occupiedColor(occupiedColor){
+        dilateRate = 0;
+        blurKernel = 0;
         detectedFrontiers = contours();
+
+}
+
+void FrontierDetector::setConfig(automap::ExplorationConfig& config){
+        this->config = config;
+        this->dilateRate = config.frontier_dilation_rate;
+        this->blurKernel = config.frontier_blur_kernel;
 
 }
 
@@ -67,8 +77,9 @@ void FrontierDetector::findFrontiers(){
         std::vector<cv::Vec4i> hierarchy = std::vector<cv::Vec4i>();
 
         //inflate edges to merge micro edges and small gaps
-        cv::dilate(floating_edges, floating_edges, cv::Mat());
-
+        if(config.frontier_inflate_frontiers) {
+                cv::dilate(floating_edges, floating_edges, cv::Mat());
+        }
         cv::findContours(floating_edges, detectedFrontiers, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE);
 
 }

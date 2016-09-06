@@ -1,18 +1,8 @@
-/*
- * PathtransformPlanner.cpp
- *
- *  Created on: Jul 13, 2016
- *      Author: sebastian
- */
-
 #include "PathtransformPlanner.h"
 
-PathtransformPlanner::PathtransformPlanner() {
+PathtransformPlanner::PathtransformPlanner(const nav_msgs::MapMetaData& mapInfo) : mapInfo(mapInfo){
 
 								robotFootprint = cv::Rect();
-								accuracy = 0;
-								minObstDistance = 0;
-								alpha = 0;
 
 								cv::Mat occupancyGrid = cv::Mat();
 								cv::Mat distanceTransform = cv::Mat();
@@ -21,36 +11,15 @@ PathtransformPlanner::PathtransformPlanner() {
 
 								initialized = false;
 
-
 }
 
-PathtransformPlanner::PathtransformPlanner(PathtransformPlanner& other) :
-								robotFootprint(other.robotFootprint), mapInfo(other.mapInfo), accuracy(other.accuracy), minObstDistance(
-																other.minObstDistance), alpha(other.alpha), initialized(
-																other.initialized), occupancyGrid(other.occupancyGrid), distanceTransform(
-																other.distanceTransform), obstacleTransform(
-																other.obstacleTransform), pathTransform(other.pathTransform) {
-}
-
-PathtransformPlanner::PathtransformPlanner(const double robotWidth, const double robotLength,
-																																											const nav_msgs::MapMetaData& mapInfo, double accuracy, double minObstDistance, double alpha) :
-								mapInfo(mapInfo), accuracy(accuracy), minObstDistance(minObstDistance), alpha(alpha) {
-
-								robotFootprint = cv::Rect(0,0,robotWidth/mapInfo.resolution, robotLength/mapInfo.resolution);
-
-								cv::Mat occupancyGrid = cv::Mat();
-								cv::Mat distanceTransform = cv::Mat();
-								cv::Mat obstacleTransform = cv::Mat();
-								cv::Mat pathTransform = cv::Mat();
-
-								this->minObstDistance = minObstDistance / mapInfo.resolution * accuracy;
-								this->alpha = alpha / mapInfo.resolution * accuracy;
-
-								//this->robotFootprint.width /= mapInfo.resolution;
-								//this->robotFootprint.height /= mapInfo.resolution;
-
+void PathtransformPlanner::setConfig(automap::ExplorationConfig& config){
+								this->config = config;
+								this->accuracy = config.planner_downsampling_factor;
+								this->minObstDistance = config.planner_min_obstacle_distance / mapInfo.resolution * config.planner_downsampling_factor;
+								this->alpha = config.planner_alpha / mapInfo.resolution * config.planner_downsampling_factor;
+								this->robotFootprint = cv::Rect(0,0,config.planner_robot_width/mapInfo.resolution, config.planner_robot_length/mapInfo.resolution);
 								initialized = true;
-
 }
 
 void PathtransformPlanner::updateTransformMatrices(const cv::Mat& occupancyGrid,
@@ -478,16 +447,8 @@ double PathtransformPlanner::getAlpha() const {
 								return alpha;
 }
 
-void PathtransformPlanner::setAlpha(double alpha) {
-								this->alpha = alpha;
-}
-
 double PathtransformPlanner::getMinObstDistance() const {
 								return minObstDistance;
-}
-
-void PathtransformPlanner::setMinObstDistance(double minObstDistance) {
-								this->minObstDistance = minObstDistance;
 }
 
 const cv::Mat& PathtransformPlanner::getObstacleTransform() const {
@@ -503,25 +464,9 @@ const cv::Mat& PathtransformPlanner::getPathTransform() const {
 }
 
 const cv::Rect PathtransformPlanner::getRobotFootprint() const {
-								//cv::Rect footprint = cv::Rect(0, 0, robotFootprint.width * mapInfo.resolution,
-								//																														robotFootprint.height * mapInfo.resolution);
 								return robotFootprint;
-}
-
-void PathtransformPlanner::setRobotFootprint(const cv::Rect& robotFootprint) {
-								//this->robotFootprint = robotFootprint;
-								//this->robotFootprint.width /= mapInfo.resolution;
-								//this->robotFootprint.height /= mapInfo.resolution;
-								this->robotFootprint = robotFootprint;
 }
 
 const nav_msgs::MapMetaData& PathtransformPlanner::getMapInfo() const {
 								return mapInfo;
-}
-
-void PathtransformPlanner::setPathTransform(const cv::Mat& pathTransform){
-								this->pathTransform = pathTransform;
-}
-void PathtransformPlanner::setOccupancyGrid(const cv::Mat& occupancyGrid){
-								this->occupancyGrid = occupancyGrid;
 }
