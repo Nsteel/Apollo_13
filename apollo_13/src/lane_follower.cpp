@@ -238,7 +238,7 @@ int main(int argc, char **argv){
 	   * buffer up before throwing some away.
 	   */
 
-     MoveBaseClient ac("move_base", true);
+     //MoveBaseClient ac("move_base", true);
 
      //image_transport::Subscriber pointCloud_sub = it.subscribe("camera/depth/image_raw", 1, readPointCloud);
      //ros::Subscriber lane_sub = nh.subscribe<lane_detector::Lane>("/lane_detector/lane", 1, std::bind(laneCB, std::placeholders::_1, &listener, &ac));
@@ -249,9 +249,9 @@ int main(int argc, char **argv){
      ros::Publisher motorControl_pub = nh.advertise<std_msgs::Int32>("car_handler/motor", 10);
      ros::Publisher steeringControl_pub = nh.advertise<std_msgs::Int32>("car_handler/steering", 10);
      //wait for the action server to come up
-     while(!ac.waitForServer(ros::Duration(5.0))){
+     /*while(!ac.waitForServer(ros::Duration(5.0))){
        ROS_INFO("Waiting for the move_base action server to come up");
-     }
+     }*/
 
      ros::Rate loop_rate(20);
      while(ros::ok()) {
