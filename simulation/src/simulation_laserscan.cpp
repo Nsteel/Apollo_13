@@ -5,11 +5,13 @@
 #include <iostream>
 #include <sensor_msgs/LaserScan.h>
 #include <tf/transform_listener.h>
-#include <Raycaster.h>
 #include <string>
 #include <stdexcept>
 #include <sensor_msgs/Range.h>
 #include <yaml-cpp/yaml.h>
+#include <dynamic_reconfigure/server.h>
+#include <simulation/RangeSensorConfig.h>
+#include <RangeSensor.h>
 
 typedef std::shared_ptr<sensor_msgs::LaserScan> scan_msg_ptr;
 typedef std::shared_ptr<geometry_msgs::Pose> pose_msg_ptr;
@@ -38,10 +40,10 @@ struct convert<geometry_msgs::Pose> {
 };
 }
 
-rc::vec2i_ptr setGridPosition(geometry_msgs::Pose& laser, nav_msgs::MapMetaData& mapInfo){
+cv::Point setGridPosition(geometry_msgs::Pose& laser, nav_msgs::MapMetaData& mapInfo){
         unsigned int grid_x = (unsigned int)((laser.position.x - mapInfo.origin.position.x) / mapInfo.resolution);
         unsigned int grid_y = (unsigned int)((-laser.position.y - mapInfo.origin.position.y) / mapInfo.resolution);
-        return std::make_shared<cv::Vec2i>(cv::Vec2i(grid_x, grid_y));
+        return cv::Point(grid_x, grid_y);
 }
 
 void getPositionInfo(const std::string& base_frame, const std::string& target_frame, const tf::TransformListener& listener, geometry_msgs::Pose * position, std::vector<double> * rpy){
@@ -83,10 +85,22 @@ void getPositionInfo(const std::string& base_frame, const std::string& target_fr
         }
 }
 
+void configCallback(simulation::RangeSensorConfig& config, uint32_t level, rs::RangeSensor* sensor, simulation::RangeSensorConfig* dynConfig)
+{
+        sensor->setConfig(config);
+        *dynConfig = config;
+        ROS_DEBUG("Config was set");
+}
+
 int main(int argc, char **argv){
 
         ros::init(argc, argv, "simulation_laserscan");
         ros::NodeHandle nh;
+
+        // create dynamic reconfigure object
+        dynamic_reconfigure::Server<simulation::RangeSensorConfig> server;
+        dynamic_reconfigure::Server<simulation::RangeSensorConfig>::CallbackType f;
+        simulation::RangeSensorConfig dynConfig;
 
         ros::Publisher scanPub = nh.advertise<sensor_msgs::LaserScan>("scan", 10);
 
@@ -104,37 +118,40 @@ int main(int argc, char **argv){
         // get "god" map
         std::string imagePath = ros::package::getPath("simulation") + "/data/map/map.pgm";
         cv::Mat map = cv::imread(imagePath,1);
+        cv::cvtColor(map, map, CV_RGB2GRAY);
 
-        // sensor object
-        rc::Raycaster rc_laser = rc::Raycaster(map, 0.05, 120.0, 90.0, 0.5);
+        // create sensor object and link with config object
+        rs::RangeSensor rs_laser(rs::laser);
+        rs_laser.setMap(map);
+        rs_laser.setMapMetaData(mapInfo);
+
+        f = boost::bind(&configCallback, _1, _2, &rs_laser, &dynConfig);
+        server.setCallback(f);
 
         // variables needed for transformations
         tf::TransformListener listener;
         geometry_msgs::Pose position;
         std::vector<double> rpy(3, 0.0);
-        rc::vec2i_ptr gridPose;
+        cv::Point gridPose;
 
         ros::Time currentTime = ros::Time::now();
 
-        scan.header.stamp = currentTime;
-        scan.header.frame_id = "scan";
-        scan.angle_increment = rc::degToRad(0.5);
-        scan.range_min = 0.0;
-        scan.range_max = 5.8;
-        std::pair<double,double> minMax = *rc_laser.angleMinMax(0);
-        scan.angle_min = rc::degToRad(minMax.first);
-        scan.angle_max = rc::degToRad(minMax.second);
-
         // Loop starts here:
-        ros::Rate loop_rate(50);
+        ros::Rate loop_rate(30);
         while(ros::ok()) {
                 currentTime = ros::Time::now();
                 scan.header.stamp = currentTime;
+                scan.header.frame_id = "scan";
+                scan.angle_increment = rs::degToRad(dynConfig.laser_angular_resolution);
+                scan.range_min = dynConfig.laser_min_sensor_distance;
+                scan.range_max = dynConfig.laser_max_sensor_distance;
+                scan.angle_min = rs::degToRad(rs::correctYawAngle(0,-dynConfig.laser_field_of_view/2));
+                scan.angle_max = rs::degToRad(rs::correctYawAngle(0, dynConfig.laser_field_of_view/2));
 
                 //get laser range infos
                 getPositionInfo("map", "scan", listener, &position, &rpy);
                 gridPose = setGridPosition(position, mapInfo);
-                scan.ranges = *rc_laser.getRangeInfo(gridPose, rc::radToDeg(rpy[2]));
+                scan.ranges = *rs_laser.getLaserScan(gridPose, rs::radToDeg(rpy[2]));
 
                 //publish sensor msgs
                 scanPub.publish(scan);

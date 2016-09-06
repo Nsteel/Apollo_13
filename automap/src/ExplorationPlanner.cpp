@@ -535,7 +535,9 @@ double ExplorationPlanner::calcInformationGain(const cv::Point& start, double ya
                 return -1;
         }
 }
-
+//Prevents endless feedback loops between local planner and ExplorationPlanner
+//by ignoring frontiers existing below a certain steering
+//precision defined in the local planner. 
 bool ExplorationPlanner::checkProximitryToFrontier(const Frontier& f) const {
         double d = cv::norm(f.getCentroidGrid() - robotGridPos)*mapInfo.resolution;
         double dTh = f.getFrontierYaw()-robotYaw;
