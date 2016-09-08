@@ -179,35 +179,81 @@ int main(int argc, char **argv){
         PathtransformPlanner pPlanner(mapMetaData);
         ExplorationPlanner ePlanner(&pPlanner);
 
+        // Begin: exploration metrics
+        // array for drawing the robots path
+        std::vector<cv::Point> explorationPath;
+        // average planner time
+        ros::Time planner_timer;
+        double t_planner = 0;
+        unsigned int t_planner_counter = 0;
+        // average ex-planner time
+        ros::Time explanner_timer;
+        double t_explanner = 0;
+        unsigned int t_explanner_counter = 0;
+        // average busy loop time
+        ros::Time loop_timer;
+        double t_loop = 0;
+        unsigned int t_loop_counter = 0;
+
+        double timediff = 0;
+
         f = boost::bind(&configCallback, _1, _2, &pPlanner, &ePlanner, &dynConfig);
         server.setCallback(f);
 
         bool finished = false;
+        bool finalCheck = false;
         int retry = dynConfig.node_retries;
         cv::Mat old = cv::Mat::zeros(map.rows, map.cols, CV_8UC1);
         // Loop starts here:
         ros::Rate loop_rate(dynConfig.node_loop_rate);
         while(ros::ok() && !finished) {
+                //start measure processing time
+                loop_timer = ros::Time::now();
+
+                //calculate information gain
                 double gain = cv::norm(old, map, CV_L2);
+                //Get Position Information...
+                getPositionInfo("map", "base_footprint", listener, &position, &rpy);
+                setGridPosition(position, mapMetaData, &gridPose);
+                //Remember path
+                explorationPath.push_back(gridPose);
 
                 if(gain>dynConfig.node_information_gain || retry==0) {
                         ROS_INFO("Enough information gained: %lf",gain);
                         old = map.clone();
                         retry = dynConfig.node_retries;
-                        //Get Position Information...
-                        getPositionInfo("map", "base_footprint", listener, &position, &rpy);
-                        setGridPosition(position, mapMetaData, &gridPose);
+
                         //Feed pathtransformPlanner...
                         try{
                                 ROS_INFO("Feeding PathtransformPlanner...");
+                                //start measure processing time
+                                planner_timer = ros::Time::now();
                                 pPlanner.updateTransformMatrices(map, gridPose);
+                                //stop measure processing time
+                                timediff = (ros::Time::now()-planner_timer).toNSec()/NSEC_PER_SEC;
+                                t_planner += timediff;
+                                t_planner_counter++;
+                                ROS_INFO("Path planning took: %lf",timediff);
+
                         }catch(std::exception& e) {
                                 std::cout<<e.what()<<std::endl;
                         }
                         bool w = false;
 
                         if(ctrlSignals.detection_On) {
+                                //start measure processing time
+                                explanner_timer = ros::Time::now();
                                 w = ePlanner.findBestPlan(map, gridPose, rpy[2], ctrlSignals.NBV_On);
+                                //stop measure processing time
+                                timediff = (ros::Time::now()-explanner_timer).toNSec()/NSEC_PER_SEC;
+                                t_explanner += timediff;
+                                t_explanner_counter++;
+                                ROS_INFO("Exploration planning took: %lf",timediff);
+                                if(!w && !finalCheck){
+                                  finalCheck = true;
+                                  continue;
+                                }
+
                         }else{
                                 w = true;
                         }
@@ -215,6 +261,8 @@ int main(int argc, char **argv){
 
 
                         if(w) {
+                                finalCheck =false;
+                                
                                 ROS_INFO("Best next Plan found!");
                                 std_msgs::Header genericHeader;
                                 genericHeader.stamp = ros::Time::now();
@@ -238,25 +286,38 @@ int main(int argc, char **argv){
                                         ros::spinOnce();
                                         ROS_INFO("Sending Goal..");
                                         sendGoal(frontierPath, ac);
-
                                 }
 
                         }else{
                                 ROS_INFO("Map exploration finished, aborting loop...");
-                                ac.waitForResult();
+                                //ac.waitForResult();
                                 ac.cancelGoal();
                                 ac.waitForResult();
 
                                 std::string imgMetaPath = ros::package::getPath("automap") + "/data/output/map.yaml";
                                 std::string imgStatPath = ros::package::getPath("automap") + "/data/output/exploration_statistics.txt";
                                 std::string imgPath = ros::package::getPath("automap") + "/data/output/map.pgm";
+                                std::string recordedPathPath = ros::package::getPath("automap") + "/data/output/path.png";
 
+                                //Save explored map
                                 std::vector<int> com_param;
                                 com_param.push_back(CV_IMWRITE_PNG_COMPRESSION);
                                 com_param.push_back(9);
                                 try {
                                         cv::imwrite(imgPath, map, com_param);
                                         ROS_INFO("Map written to: %s", imgPath.c_str());
+
+                                } catch (std::runtime_error& ex) {
+                                        std::cout << "Exception converting img to PNG: " << ex.what() << std::endl;
+                                }
+
+                                //Save exploration path
+                                cv::Mat pathMap = map.clone();
+                                cv::cvtColor(pathMap, pathMap, CV_GRAY2RGB);
+                                cv::polylines(pathMap, explorationPath, false, cv::Scalar(0, 0, 255), 1, 8);
+                                try {
+                                        cv::imwrite(recordedPathPath, pathMap, com_param);
+                                        ROS_INFO("Path written to: %s", recordedPathPath.c_str());
 
                                 } catch (std::runtime_error& ex) {
                                         std::cout << "Exception converting img to PNG: " << ex.what() << std::endl;
@@ -287,6 +348,21 @@ int main(int argc, char **argv){
                                 Y_out_statistics << YAML::Value << telemetry.radial_distance;
                                 Y_out_statistics << YAML::Key << "time elapsed during exploration(s)";
                                 Y_out_statistics << YAML::Value << (ros::Time::now()-initTime).toNSec()/NSEC_PER_SEC;
+                                Y_out_statistics << YAML::Key << "average path planner processing time(s)";
+                                Y_out_statistics << YAML::Value << t_planner/t_planner_counter;
+                                Y_out_statistics << YAML::Key << "average exploration planner processing time(s)";
+                                Y_out_statistics << YAML::Value << t_explanner/t_explanner_counter;
+                                Y_out_statistics << YAML::Key << "average busy loop processing time(s)";
+                                Y_out_statistics << YAML::Value << t_loop/t_loop_counter;
+
+                                // calc quality of map
+                                std::string godMapPath = ros::package::getPath("simulation") + "/data/map/map.pgm";
+                                cv::Mat godMap = cv::imread(godMapPath,1);
+                                cv::cvtColor(godMap, godMap, CV_RGB2GRAY);
+                                double diffMap = cv::norm(godMap, map, CV_L2);
+
+                                Y_out_statistics << YAML::Key << "in comparison to god map (L2Norm)";
+                                Y_out_statistics << YAML::Value << diffMap;
                                 Y_out_statistics << YAML::EndMap;
 
                                 std::ofstream outfile_yaml(imgMetaPath);
@@ -323,7 +399,11 @@ int main(int argc, char **argv){
                 edgeImageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", out).toImageMsg();
                 edgePub.publish(edgeImageMsg);
 
-
+                //stop measure processing time
+                timediff = (ros::Time::now()-loop_timer).toNSec()/NSEC_PER_SEC;
+                t_loop += timediff;
+                t_loop_counter++;
+                ROS_INFO("Whole loop took: %lf",timediff);
 
                 ros::spinOnce();
                 loop_rate.sleep();

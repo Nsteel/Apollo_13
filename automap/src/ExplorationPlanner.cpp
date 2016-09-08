@@ -94,6 +94,7 @@ bool ExplorationPlanner::extractValidFrontiersLocal(bool useNBV){
         localDetector.processFrontiers(window);
         contours found = localDetector.getFrontiers();
         if(found.size()==0) {
+                std::cout<<"Local-Detected-Frontiers: "<<found.size()<<std::endl;
                 return false;
         }
 
@@ -101,7 +102,7 @@ bool ExplorationPlanner::extractValidFrontiersLocal(bool useNBV){
         std::vector<Frontier>passableFrontiers;
 
         //std::cout<<robotFootprint<<std::endl;
-        double minL = std::sqrt(robotFootprint.height*robotFootprint.height + robotFootprint.width*robotFootprint.width)*mapInfo.resolution;
+        double minL = std::sqrt(robotFootprint.height*robotFootprint.height + robotFootprint.width*robotFootprint.width)*mapInfo.resolution*config.frontier_tolerance;
         for(auto current : found) {
                 frontierPoints globalFp = localPtsToGlobal(current);
                 cv::Point2f center;
@@ -111,15 +112,16 @@ bool ExplorationPlanner::extractValidFrontiersLocal(bool useNBV){
                 if(length>minL) {
                         cv::Point centroidGlobal = calcFrontierCentroid(globalFp);
                         double frontierYaw = calcFrontierColorGradient(globalFp);
-                        if(!useNBV) {
-                                // this prevents centroids in unknown but also not very smart
-                                centroidGlobal = shiftCentroid(centroidGlobal, frontierYaw);
-                        }
+                        //if(!useNBV) {
+                        // this prevents centroids in unknown but also not very smart
+                        centroidGlobal = shiftCentroid(centroidGlobal, frontierYaw);
+                        //}
                         cv::Point2f centroidWorld = gridPtToWorld(centroidGlobal);
                         passableFrontiers.push_back(Frontier(globalFp, centroidGlobal, centroidWorld, length, frontierYaw));
                 }
         }
         if(passableFrontiers.size()==0) {
+                std::cout<<"Local-Passable-Frontiers: "<<passableFrontiers.size()<<std::endl;
                 return false;
         }
 
@@ -136,11 +138,14 @@ bool ExplorationPlanner::extractValidFrontiersLocal(bool useNBV){
                                         calcScoreNBV(current);
                                 }
 
+                                if(current.getScore()>=0) {
+                                        validFrontiers.push_back(current);
+                                        //
+                                        frontierStack.push_back(current);
+                                }else{
+                                  std::cout<<"Discarded score: "<<current.getScore()<<" Pos: "<<current.getCentroidGrid()<<std::endl;
+                                }
 
-
-                                frontierStack.push_back(current);
-                                //
-                                validFrontiers.push_back(current);
                         }catch(std::exception& e) {
                                 std::cout<<e.what()<<std::endl;
                         }
@@ -148,6 +153,7 @@ bool ExplorationPlanner::extractValidFrontiersLocal(bool useNBV){
 
         }
         if(validFrontiers.size()==0) {
+                std::cout<<"Local-Valid-Frontiers: "<<validFrontiers.size()<<std::endl;
                 return false;
         }
         //
@@ -167,29 +173,31 @@ bool ExplorationPlanner::extractValidFrontiersGlobal(bool useNBV){
         globalDetector.processFrontiers(occupancyGrid);
         contours found = globalDetector.getFrontiers();
         if(found.size()==0) {
+                std::cout<<"Global-Detected-Frontiers: "<<found.size()<<std::endl;
                 return false;
         }
 
         //2.) generate passable frontier objects only
         std::vector<Frontier>passableFrontiers;
-        double minL = std::sqrt(robotFootprint.height*robotFootprint.height + robotFootprint.width*robotFootprint.width)*mapInfo.resolution;
+        double minL = std::sqrt(robotFootprint.height*robotFootprint.height + robotFootprint.width*robotFootprint.width)*mapInfo.resolution*config.frontier_tolerance;
         for(auto current : found) {
                 cv::Point2f center;
                 float radius;
                 cv::minEnclosingCircle(current, center, radius);
-                double length = radius*2*mapInfo.resolution;
+                double length = radius*2*mapInfo.resolution*config.frontier_tolerance;
                 if(length>minL) {
                         cv::Point centroidGlobal = calcFrontierCentroid(current);
                         double frontierYaw = calcFrontierColorGradient(current);
-                        if(!useNBV) {
-                                // this prevents centroids in unknown but also not very smart
-                                centroidGlobal = shiftCentroid(centroidGlobal, frontierYaw);
-                        }
+                        //if(!useNBV) {
+                        // this prevents centroids in unknown but also not very smart
+                        centroidGlobal = shiftCentroid(centroidGlobal, frontierYaw);
+                        //}
                         cv::Point2f centroidWorld = gridPtToWorld(centroidGlobal);
                         passableFrontiers.push_back(Frontier(current, centroidGlobal, centroidWorld, length, frontierYaw));
                 }
         }
         if(passableFrontiers.size()==0) {
+                std::cout<<"Global-Passable-Frontiers: "<<passableFrontiers.size()<<std::endl;
                 return false;
         }
 
@@ -204,11 +212,17 @@ bool ExplorationPlanner::extractValidFrontiersGlobal(bool useNBV){
 
                                 }else{
                                         calcScoreNBV(current);
+
                                 }
 
-                                validFrontiers.push_back(current);
-                                //
-                                frontierStack.push_back(current);
+                                if(current.getScore()>=0) {
+                                        validFrontiers.push_back(current);
+                                        //
+                                        frontierStack.push_back(current);
+                                }else{
+                                  std::cout<<"Discarded score: "<<current.getScore()<<" Pos: "<<current.getCentroidGrid()<<std::endl;
+                                }
+
 
                         }catch(std::exception& e) {
                                 std::cout<<e.what()<<std::endl;
@@ -217,6 +231,7 @@ bool ExplorationPlanner::extractValidFrontiersGlobal(bool useNBV){
 
         }
         if(validFrontiers.size()==0) {
+                std::cout<<"Global-Valid-Frontiers: "<<validFrontiers.size()<<std::endl;
                 return false;
         }
         //
@@ -252,13 +267,22 @@ void ExplorationPlanner::calcScoreNBV(Frontier& f) const {
         double yaw = f.getFrontierYaw();
         cv::Point centroid = f.getCentroidGrid();
 
+        //check for reachability of the frontier
+        try{
+                planner->findPath(centroid);
+
+        }catch(std::exception& e) {
+                f.setScore(-40);
+                return;
+        }
+
         //double bestScore = calcInformationGain(centroid, yaw, 90.0, 0.5, 120.0);
-        double bestScore = 0;
+        double bestScore = -10;
         double bestYaw = yaw;
         cv::Point bestCentroid = centroid;
 
         //fallback strategy if frontier doesn't fit fov:
-        double bestFit = 0;
+        double bestFit = -20;
         bool fittingFrontierFound = false;
         double bestFitAngle;
         cv::Point bestFitPoint;
@@ -288,7 +312,16 @@ void ExplorationPlanner::calcScoreNBV(Frontier& f) const {
                                 fittingFrontierFound = true;
 
                         }else{
-                                if(quality>bestFit) {
+
+                                bool reachable = true;
+                                try{
+                                        planner->findPath(current);
+
+                                }catch(std::exception& e) {
+                                        reachable = false;
+                                }
+
+                                if(quality>bestFit && reachable) {
                                         bestFit = quality;
                                         bestFitAngle = angle;
                                         bestFitPoint = current;
@@ -306,6 +339,12 @@ void ExplorationPlanner::calcScoreNBV(Frontier& f) const {
                                                 config.exploration_score_nbv_sensor_max_range/mapInfo.resolution);
                 bestYaw = bestFitAngle;
                 bestCentroid = bestFitPoint;
+        }
+
+        if(bestScore<0) {
+                f.setScore(0);
+                f.setPath(planner->findPath(centroid));
+                return;
         }
 
         f.setScore(bestScore);
@@ -375,7 +414,7 @@ double ExplorationPlanner::calcInformationGain(const cv::Point& start, double ya
         cv::Mat original = occupancyGrid(rw).clone();
 
         int kernelSize = 3;
-        for(int b = 0; b<2; b++) {
+        for(int b = 0; b<config.exploration_score_nbv_obstacle_inflation; b++) {
                 cv::erode(original,original, cv::getStructuringElement( 0,
                                                                         cv::Size( 2*kernelSize + 1, 2*kernelSize + 1 ),
                                                                         cv::Point( kernelSize, kernelSize ) ));
@@ -419,16 +458,13 @@ double ExplorationPlanner::calcInformationGain(const cv::Point& start, double ya
                 }else if(dTh>180.0) {
                         dTh -= 360.0;
                 }
-                double n = cv::norm(original, temp, CV_L2);
+                double n = cv::norm(original, temp, CV_L2) + 1;
 
-                if(distance<=config.exploration_score_nbv_distance_thresh) {
-                        return n * cv::exp(-config.exploration_score_nbv_alpha*distance) *  (180.0-std::fabs(dTh))/180;
-                }else{
-                        return n * cv::exp(-config.exploration_score_nbv_alpha*distance);
-                }
+                return n * cv::exp(-config.exploration_score_nbv_alpha*distance) * cv::exp(config.exploration_score_nbv_beta*(180.0-std::fabs(dTh))/180);
+
         }catch(std::exception& e) {
 
-                return -1;
+                return -30;
         }
 }
 //Prevents endless feedback loops between local planner and ExplorationPlanner
