@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+	<master auto="start" />
+
+	<arg name="navigation" default="true" />
+  <arg name="planner" default="true"/>
+	<arg name="dashboard" default="true"/>
+	<arg name="rviz" default="true"/>
+	<arg name="kinect2" default="true" />
+	<arg name="kinect1" default="false" />
+  <arg name="gmapper" default="true"/>
+
+	<!-- Set the robot model -->
+	<param name="robot_description" textfile="$(find simulation)/data/urdf_model/apollo_13.urdf"/>
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
+	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+
+	<!-- Run the necessary nodes to bring up the car -->
+	<node pkg="apollo_13" type="apollo_13" name="apollo_13"/>
+	<node pkg="car_handler" type="car_handler_node" name="car_handler" />
+	<node pkg="car_handler" type="car_arduino" name="car_arduino"/>
+	<include file="$(find apollo_13)/launch/complementary_filter.launch" />
+
+	<!-- Run RosOSC -->
+	<include file="$(find apollo_13)/launch/interaction.launch" />
+
+  <!-- Run the mapping -->
+  <group if="$(arg gmapper)">
+    <!-- <include file="$(find simulation)/launch/amcl.launch"/> -->
+  	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping">
+	    <param name="scan" value="scan" />
+      <param name="map_update_interval" value="0.2" />
+			<param name="linearUpdate" value="0.05"/>
+  		<param name="angularUpdate" value="0.04"/>
+      <param name="maxUrange" value="9.8" />
+      <param name="maxRange" value="10.7" />
+      <param name="particles" value="300" />
+      <param name="sigma" value="0.05" />
+      <param name="kernelSize" value="1" />
+      <param name="lstep" value="0.05" />
+      <param name="astep" value="0.05" />
+      <param name="iterations" value="1" />
+      <param name="lsigma" value="0.075" />
+      <param name="ogain" value="3.0" />
+      <param name="lskip" value="0" />
+      <param name="srr" value="0.01" />
+      <param name="srt" value="0.02" />
+      <param name="str" value="0.01" />
+      <param name="stt" value="0.02" />
+      <param name="temporalUpdate" value="-1.0" />
+      <param name="resampleThreshold" value="0.5" />
+      <param name="xmin" value="-100.0" />
+      <param name="ymin" value="-100.0" />
+      <param name="xmax" value="100.0" />
+      <param name="ymax" value="100.0" />
+      <param name="delta" value="0.05" />
+      <param name="llsamplerange" value="0.01" />
+      <param name="llsamplestep" value="0.01" />
+      <param name="lasamplerange" value="0.005" />
+      <param name="lasamplestep" value="0.005" />
+
+  	</node>
+  </group>
+
+	<group if="$(arg navigation)">
+
+		<!-- Run the map server -->
+
+				<group if="$(arg kinect2)">
+		  			<!-- Bring up the Kinect -->
+					<include file="$(find kinect2_bridge)/launch/kinect2_bridge_test.launch" />
+
+					<!-- Convert the kinect point cloud to a laserscan message -->
+					<node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan">
+						<remap from="image" to="/kinect2/sd/image_depth_rect" />
+						<param name="output_frame_id" value="scan" />
+						<param name="range_max" value="10.0" />
+						<param name="range_min" value="0.80" />
+					</node>
+				</group>
+
+				<group if="$(arg kinect1)">
+		  			<!-- Bring up the Kinect -->
+					<include file="$(find freenect_launch)/launch/freenect.launch" />
+
+					<!-- Convert the kinect point cloud to a laserscan message -->
+					<node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan">
+						<remap from="image" to="/camera/depth/image_raw" />
+						<param name="output_frame_id" value="base_laser" />
+						<param name="range_max" value="6.0" />
+						<param name="range_min" value="0.80" />
+					</node>
+				</group>
+
+
+
+		<!-- Run the navigation stack -->
+    <group if="$(arg planner)">
+  		<node pkg="move_base" type="move_base" respawn="false" name="move_base">
+
+  			<!-- Planners -->
+  			<!-- <param name="base_global_planner" value="SBPLLatticePlanner"/> -->
+  				<!-- Motion primitives file -->
+  			<!-- <param name="SBPLLatticePlanner/primitive_filename" value="$(find simulation)/data/motion_primitives/apollo_13_motion_primitives.mprim"/> -->
+  			<param name="base_global_planner" value="global_planner/GlobalPlannerAdapter"/>
+  			<param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS"/>
+  			<rosparam file="$(find automap)/config/teb_local_planner_params.yaml" command="load"/>
+  		  <!-- <param name="base_local_planner" value="pose_follower/PoseFollower"/> -->
+  			<!-- <rosparam file="$(find automap)/config/base_local_planner_params.yaml" command="load"/> -->
+
+  			<!-- Costmap parameters -->
+  			<rosparam file="$(find automap)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+  			<rosparam file="$(find automap)/config/costmap_common_local_params.yaml" command="load" ns="local_costmap"/>
+  			<rosparam file="$(find automap)/config/local_costmap_params.yaml" command="load"/>
+  			<rosparam file="$(find automap)/config/global_costmap_params.yaml" command="load"/>
+  			<!--<rosparam file="$(find automap)/config/sbpl_global_params.yaml" command="load"/>-->
+  			<param name="clearing_rotation_allowed" value="false" />
+  		</node>
+
+        <node pkg="automap" type="automap_node" name="automap" output="screen"/>
+
+  	</group>
+
+		<!-- Run AMCL
+		<include file="$(find apollo_13)/launch/amcl_automap.launch"/>
+    -->
+	</group>
+
+  <!-- Show the Rviz visualization 	-->
+	<group if="$(arg rviz)">
+		<node pkg="rviz" type="rviz" name="rviz" args="-d $(find simulation)/data/viewer/viewer.rviz"/>
+
+	</group>
+	<!-- Run the Dashboard Application -->
+	<group if="$(arg dashboard)">
+		<node pkg="simulation" type="dashboard_node" name="dashboard_simulation" output="screen"/>
+	</group>
+
+</launch>
