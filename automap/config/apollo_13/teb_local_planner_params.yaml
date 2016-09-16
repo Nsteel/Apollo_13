@@ -1,0 +1,23 @@
+TebLocalPlannerROS:
+  max_vel_x: 0.15
+  max_vel_theta: 0.3
+  max_vel_x_backwards: 1.0
+  free_goal_vel: true
+  wheelbase: 0.25
+  cmd_angle_instead_rotvel: true
+  footprint_model/type: polygon
+  #footprint_model/vertices: [ [0.23, -0.165], [-0.23, -0.165], [-0.23, 0.165], [0.23, 0.165] ]
+  footprint_model/vertices: [[-0.325,-0.10], [0.075, -0.10], [0.075, 0.10], [-0.325, 0.10]]
+  xy_goal_tolerance: 0.35
+  yaw_goal_tolerance: 0.5
+  min_turning_radius: 0.82
+  #min_turning_radius: 1.0
+
+  min_obstacle_dist: 0.3
+  enable_homotopy_class_planning: false
+
+  max_global_plan_lookahead_dist: 8.0
+  feasibility_check_no_poses: 20
+
+  #weight_kinematics_forward_drive: 1000.0
+  weight_kinematics_forward_drive: 1.0

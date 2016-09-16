@@ -1,5 +1,4 @@
 <launch>
-
   <arg name="base_name"         default="kinect2"/>
   <arg name="sensor"            default=""/>
   <arg name="publish_tf"        default="true"/>

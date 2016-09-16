@@ -1,0 +1,21 @@
+local_costmap:
+  global_frame: map
+  robot_base_frame: /base_footprint
+  update_frequency: 20.0
+  publish_frequency: 30
+  static_map: false
+  rolling_window: true
+  width: 6
+  height: 6
+  resolution: 0.2
+  origin_x: 0.0
+  origin_y: 0.0
+
+sonar:
+    topics: ['/front_us_range', '/left_us_range', '/right_us_range']
+    no_readings_timeout: 1.0
+
+plugins:
+  - {name: sonar, type: "range_sensor_layer::RangeSensorLayer"}
+  - {name: obstacle_layer,           type: "costmap_2d::VoxelLayer"}
+  - {name: inflation_layer,                 type: "costmap_2d::InflationLayer"}

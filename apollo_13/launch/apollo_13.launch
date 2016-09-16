@@ -21,7 +21,7 @@
 	-->
 
 	<!-- Run the necessary nodes to bring up the car -->
-	<node pkg="apollo_13" type="apollo_13" name="apollo_13" output ="screen" />
+	<node pkg="apollo_13" type="apollo_13" name="apollo_13" output="screen" />
 	<node pkg="car_handler" type="car_handler_node" name="car_handler" />
 	<node pkg="car_handler" type="car_arduino" name="car_arduino" output="screen" />
 	<include file="$(find apollo_13)/launch/complementary_filter.launch" />
@@ -38,13 +38,16 @@
 		  			<!-- Bring up the Kinect -->
 					<include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch" />
 
+					<node pkg="apollo_13" type="kinect2_filter" name="kinect2_filter" />
 					<!-- Convert the kinect point cloud to a laserscan message -->
-					<node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan">
-						<remap from="image" to="/kinect2/sd/image_depth_rect" />
+					<node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan" >
+						<remap from="image" to="/apollo_13/depth" />
+						<remap from="camera_info" to="/kinect2/sd/camera_info" />
 						<param name="output_frame_id" value="base_laser" />
 						<param name="range_max" value="10.0" />
 						<param name="range_min" value="0.80" />
 					</node>
+
 				</group>
 
 				<group if="$(arg kinect1)">

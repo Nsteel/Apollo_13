@@ -44,6 +44,7 @@ public:
 								// main methods
 								void updateTransformMatrices(const cv::Mat& occupancyGrid, const cv::Point& robot);
 								Path findPath(const cv::Point& goal) const;
+								bool isGoalSafe(const cv::Point& goal) const;
 
 
 private:

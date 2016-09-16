@@ -112,12 +112,15 @@ Path PathtransformPlanner::findPath(const cv::Point& goal) const {
 								cv::Point lastTransformed;
 								cv::Point current = goal;
 
+								int maxSteps = pathTransform.rows+pathTransform.cols*100;
+
 								while ( 1/accuracy<cv::norm(current-robot)) {
+																maxSteps--;
 																lastTransformed = currentTransformed;
 																currentTransformed = findSteepestDescent(currentTransformed);
 																current = cv::Point(currentTransformed.x / accuracy, currentTransformed.y / accuracy);
 																path.push_back(current);
-																if (lastTransformed == currentTransformed) {
+																if (lastTransformed == currentTransformed || maxSteps==0) {
 																								msg = "Target unreachable !";
 																								throw PlannerException(msg);
 																}
@@ -133,6 +136,37 @@ Path PathtransformPlanner::findPath(const cv::Point& goal) const {
 								}
 
 								return Path(pathReverse, mapInfo.resolution);
+}
+
+bool PathtransformPlanner::isGoalSafe(const cv::Point& goal) const{
+	std::string msg;
+	if(!initialized) {
+									msg = "PathtransformPlanner has not been initialized yet..";
+									throw PlannerException(msg);
+	}
+	if (goal == robot) {
+									msg = "Destination Reached !";
+									throw PlannerException(msg);
+	}
+	if (pathTransform.cols == 0 || pathTransform.rows == 0) {
+									msg = "No path transform grid found !";
+									throw PlannerException(msg);
+	}
+	cv::Point goalTransformed = cv::Point(goal.x * accuracy, goal.y * accuracy);
+
+	if (goalTransformed.x >= occupancyGrid.cols || goalTransformed.y >= occupancyGrid.rows
+					|| goalTransformed.x < 0 || goalTransformed.y < 0) {
+									msg = "Target not on Map !";
+									throw PlannerException(msg);
+	}
+	if (occupancyGrid.at<uchar>(goalTransformed) <= PTP::OCCUPIED_CELL_COLOR) {
+									msg = "Target unreachable - Blocked !";
+									throw PlannerException(msg);
+	}
+
+	float cost = obstacleTransform.at<float>(goalTransformed);
+	return cost*1.3>=minObstDistance;
+
 }
 
 cv::Point PathtransformPlanner::findSteepestDescent(
