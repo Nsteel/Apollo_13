@@ -261,15 +261,19 @@ double ExplorationPlanner::calcScoreSimple(const Frontier& f) const {
 
         double score = 0;
         double distance = f.getPath().getWorldLength();
+        if(distance<=config.planner_robot_length*2){
+          return -40;
+        }
         double dTh = f.getFrontierYaw()-robotYaw;
         if(dTh<-180.0) {
                 dTh += 360.0;
         }else if(dTh>180.0) {
                 dTh -= 360.0;
         }
-        double dFun = std::pow(config.exploration_score_simple_dist_base*(1/(1+distance)), config.exploration_score_simple_dist_exp);
-        double yFun = std::pow(config.exploration_score_simple_angle_base*((180.0-std::fabs(dTh))/180.0), config.exploration_score_simple_angle_exp);
-        score =  6*dFun * yFun;
+        //double dFun = std::pow(config.exploration_score_simple_dist_base*(1/(1+distance)), config.exploration_score_simple_dist_exp);
+        //double yFun = std::pow(config.exploration_score_simple_angle_base*((180.0-std::fabs(dTh))/180.0), config.exploration_score_simple_angle_exp);
+        //score =  dFun * yFun;
+        score = cv::exp(-config.exploration_score_simple_dist_exp*distance) * cv::exp(config.exploration_score_simple_angle_exp*(180.0-std::fabs(dTh))/180);
 
         std::cout<<f.getCentroidGrid()<<" // dist: "<<distance<<" // dTh: "<<dTh<<" // score: "<<score<<std::endl;
         return score;

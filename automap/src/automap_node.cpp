@@ -143,8 +143,8 @@ int main(int argc, char **argv){
         }
         //control_On : motion control on/off / detection_On : sensing on/off /  NBV_On : nbv on/off
         automap::automap_ctrl_msg ctrlSignals;
-        ctrlSignals.control_On=false;
-        ctrlSignals.detection_On=false;
+        ctrlSignals.control_On=true;
+        ctrlSignals.detection_On=true;
         ctrlSignals.NBV_On=false;
 
 
@@ -262,7 +262,7 @@ int main(int argc, char **argv){
 
                         if(w) {
                                 finalCheck =false;
-                                
+
                                 ROS_INFO("Best next Plan found!");
                                 std_msgs::Header genericHeader;
                                 genericHeader.stamp = ros::Time::now();

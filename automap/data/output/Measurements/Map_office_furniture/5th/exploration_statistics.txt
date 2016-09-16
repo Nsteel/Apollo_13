@@ -1,0 +1,6 @@
+driven distance during exploration(m): 124.5254918207133
+time elapsed during exploration(s): 423.227359729
+average path planner processing time(s): 0.2156727586704545
+average exploration planner processing time(s): 0.7046738575227273
+average busy loop processing time(s): 0.2270460268284588
+in comparison to god map (L2Norm): 30567.3858057898

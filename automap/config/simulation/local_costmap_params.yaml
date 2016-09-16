@@ -5,8 +5,10 @@ local_costmap:
   publish_frequency: 30
   static_map: false
   rolling_window: true
-  width: 6
-  height: 6
+  #width: 6
+  #height: 6
+  width: 10
+  height: 10
   resolution: 0.1
   origin_x: 0.0
   origin_y: 0.0
