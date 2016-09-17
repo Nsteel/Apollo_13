@@ -6,11 +6,11 @@ global_costmap:
   update_frequency: 1
   publish_frequency: 1
   static_map: false
-  width: 6.0
-  height: 6.0
+  width: 20.0
+  height: 20.0
   origin_x: 0.0
   origin_y: 0.0
-  resolution: 0.1
+  resolution: 0.2
 
 plugins:
   - {name: static_layer, type: "costmap_2d::StaticLayer"}

@@ -34,7 +34,7 @@ obstacle_layer:
 #cost_scaling_factor and inflation_radius were now moved to the inflation_layer ns
 inflation_layer:
   enabled:              true
-  inflation_radius:     0.15  # max. distance from an obstacle at which costs are incurred for planning paths.
+  inflation_radius:     0.35  # max. distance from an obstacle at which costs are incurred for planning paths.
 
 static_layer:
   enabled:              true

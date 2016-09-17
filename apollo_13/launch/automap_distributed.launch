@@ -135,9 +135,7 @@
 					<param name="exploration_rolling_window_height" value="22" />
 
 					<param name="exploration_score_simple_dist_exp" value="4" />
-					<param name="exploration_score_simple_dist_base" value="2" />
 					<param name="exploration_score_simple_angle_exp" value="4" />
-					<param name="exploration_score_simple_angle_base" value="2" />
 
 					<param name="exploration_score_nbv_sampling_points" value="25" />
 					<param name="exploration_score_nbv_sensor_min_range" value="1" />

@@ -143,10 +143,6 @@ int main(int argc, char **argv){
         }
         //control_On : motion control on/off / detection_On : sensing on/off /  NBV_On : nbv on/off
         automap::automap_ctrl_msg ctrlSignals;
-        ctrlSignals.control_On=true;
-        ctrlSignals.detection_On=true;
-        ctrlSignals.NBV_On=false;
-
 
         tf::TransformListener listener;
         geometry_msgs::Pose position;
@@ -199,6 +195,10 @@ int main(int argc, char **argv){
 
         f = boost::bind(&configCallback, _1, _2, &pPlanner, &ePlanner, &dynConfig);
         server.setCallback(f);
+
+        ctrlSignals.control_On=dynConfig.node_control_on;
+        ctrlSignals.detection_On=dynConfig.node_sensing_on;
+        ctrlSignals.NBV_On=dynConfig.node_use_nbv;
 
         bool finished = false;
         bool finalCheck = false;
@@ -270,9 +270,12 @@ int main(int argc, char **argv){
 
 
                                 // send map with valid detected Edges
-                                cv::Mat out = ePlanner.drawFrontiers();
-                                edgeImageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", out).toImageMsg();
-                                edgePub.publish(edgeImageMsg);
+                                if(dynConfig.node_show_exploration_planner_result){
+                                  cv::Mat out = ePlanner.drawFrontiers();
+                                  edgeImageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", out).toImageMsg();
+                                  edgePub.publish(edgeImageMsg);
+                                }
+
 
                                 nav_msgs::Path frontierPath;
                                 if(ctrlSignals.detection_On) {
@@ -395,9 +398,11 @@ int main(int argc, char **argv){
                         retry--;
                 }
                 // resend map with valid detected Edges
-                cv::Mat out = ePlanner.drawFrontiers();
-                edgeImageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", out).toImageMsg();
-                edgePub.publish(edgeImageMsg);
+                if(dynConfig.node_show_exploration_planner_result){
+                  cv::Mat out = ePlanner.drawFrontiers();
+                  edgeImageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", out).toImageMsg();
+                  edgePub.publish(edgeImageMsg);
+                }
 
                 //stop measure processing time
                 timediff = (ros::Time::now()-loop_timer).toNSec()/NSEC_PER_SEC;

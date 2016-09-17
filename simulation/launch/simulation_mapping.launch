@@ -29,7 +29,7 @@
 			<param name="frontier_tolerance" value="1.2" />
 			<param name="frontier_dilation_rate" value="3" />
 			<param name="frontier_blur_kernel" value="5" />
-			<param name="frontier_inflate_frontiers" value="False" />
+			<param name="frontier_inflate_frontiers" value="True" />
 
 			<param name="exploration_rolling_window_width" value="22" />
 			<param name="exploration_rolling_window_height" value="22" />
@@ -55,9 +55,13 @@
 			<param name="exploration_goal_accuracy_position" value="1.0" />
 			<param name="exploration_goal_accuracy_angle" value="0.5" />
 
-			<param name="node_retries" value="24" />
+			<param name="node_retries" value="12" />
 			<param name="node_information_gain" value="2500" />
-			<param name="node_loop_rate" value="4" />
+			<param name="node_loop_rate" value="2" />
+			<param name="node_control_on" value="True" />
+			<param name="node_sensing_on" value="True" />
+			<param name="node_use_nbv" value="True" />
+			<param name="node_show_exploration_planner_result" value="False" />
   </node>
 
   <!-- Run the mapping -->
