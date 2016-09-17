@@ -24,7 +24,7 @@ Dashboard::Dashboard(ros::NodeHandle* nh, QWidget *parent) :
 
         timer = new QTimer(this);
         connect(timer, SIGNAL(timeout()), this, SLOT(pollNodeHandle()));
-        timer->start(20);
+        timer->start(5);
 
 }
 
@@ -67,7 +67,7 @@ void Dashboard::keyPressEvent(QKeyEvent *event){
 
         case  Qt::Key_A: {
                 if(steering > -50) {
-                        ctrl_msg.steering = steering - 1;
+                        ctrl_msg.steering = steering - 2;
                 }
                 break;
         }
@@ -75,7 +75,7 @@ void Dashboard::keyPressEvent(QKeyEvent *event){
 
         case Qt::Key_D: {
                 if(steering < 50) {
-                        ctrl_msg.steering  = steering + 1;
+                        ctrl_msg.steering  = steering + 2;
                 }
                 break;
         }
@@ -91,7 +91,7 @@ void Dashboard::keyPressEvent(QKeyEvent *event){
 
 void Dashboard::pollNodeHandle(){
         ros::spinOnce();
-        timer->start(20);
+        timer->start(5);
 }
 
 void Dashboard::valueChangedSpeed(int value){

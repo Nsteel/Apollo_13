@@ -155,6 +155,8 @@ add_executable(simulation_node src/simulation_control.cpp)
 add_executable(scan_node src/simulation_laserscan.cpp)
 add_executable(usrange_node src/simulation_usscan.cpp)
 add_executable(dashboard_node src/simulation_dashboard.cpp ${UIS_HDRS})
+add_executable(measurements_node src/simulation_measurements.cpp)
+
 
 add_dependencies(simulation_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
 add_dependencies(simulation_node ${PROJECT_NAME}_gencpp)
@@ -162,7 +164,7 @@ add_dependencies(scan_node ${PROJECT_NAME}_gencfg)
 add_dependencies(usrange_node ${PROJECT_NAME}_gencfg)
 add_dependencies(RANGE_SENSOR ${PROJECT_NAME}_gencfg)
 add_dependencies(DASH ${PROJECT_NAME}_gencpp)
-
+add_dependencies(measurements_node ${PROJECT_NAME}_gencpp)
 
 
 ## Add cmake target dependencies of the executable
@@ -178,6 +180,9 @@ add_dependencies(DASH ${PROJECT_NAME}_gencpp)
  )
  target_link_libraries(usrange_node
    ${catkin_LIBRARIES} ${OpenCV_LIBS} yaml-cpp RANGE_SENSOR
+ )
+ target_link_libraries(measurements_node
+   ${catkin_LIBRARIES} ${OpenCV_LIBS} yaml-cpp
  )
 #target_link_libraries(dashboard_node ${catkin_LIBRARIES} ${Qt5_LIBRARIES} Qt5::Widgets Qt5::Core Qt5::Gui DASH)
 target_link_libraries(DASH Qt5::Widgets Qt5::Core Qt5::Gui)
