@@ -29,15 +29,15 @@
 			<param name="frontier_tolerance" value="1.2" />
 			<param name="frontier_dilation_rate" value="3" />
 			<param name="frontier_blur_kernel" value="5" />
-			<param name="frontier_inflate_frontiers" value="True" />
+			<param name="frontier_inflate_frontiers" value="False" />
 
 			<param name="exploration_rolling_window_width" value="22" />
 			<param name="exploration_rolling_window_height" value="22" />
 
-			<param name="exploration_score_simple_dist_exp" value="4" />
-			<param name="exploration_score_simple_dist_base" value="2" />
-			<param name="exploration_score_simple_angle_exp" value="4" />
-			<param name="exploration_score_simple_angle_base" value="2" />
+			<param name="exploration_score_simple_dist_exp" value="0.13" />
+		<!--	<param name="exploration_score_simple_dist_base" value="2" /> -->
+			<param name="exploration_score_simple_angle_exp" value="1.96" />
+		<!--	<param name="exploration_score_simple_angle_base" value="2" /> -->
 
 			<param name="exploration_score_nbv_sampling_points" value="25" />
 			<param name="exploration_score_nbv_sensor_min_range" value="1" />
@@ -47,15 +47,17 @@
 			<param name="exploration_score_nbv_angular_scan_accuracy" value="10.0" />
 			<param name="exploration_score_nbv_angular_scan_range" value="180" />
 			<param name="exploration_score_nbv_obstacle_inflation" value="2" />
-			<param name="exploration_score_nbv_alpha" value="0.10" />
+			<!--<param name="exploration_score_nbv_alpha" value="0.10" />-->
+			<!--<param name="exploration_score_nbv_beta" value="1.5" />-->
+			<param name="exploration_score_nbv_alpha" value="0.12" />
 			<param name="exploration_score_nbv_beta" value="1.5" />
 
 			<param name="exploration_goal_accuracy_position" value="1.0" />
 			<param name="exploration_goal_accuracy_angle" value="0.5" />
 
-			<param name="node_retries" value="8" />
-			<param name="node_information_gain" value="3500" />
-			<param name="node_loop_rate" value="2" />
+			<param name="node_retries" value="24" />
+			<param name="node_information_gain" value="2500" />
+			<param name="node_loop_rate" value="4" />
   </node>
 
   <!-- Run the mapping -->
