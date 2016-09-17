@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+	<master auto="start"/>
+
+	<arg name="dashboard" default="true"/>
+	<arg name="rviz" default="true"/>
+
+	<!-- Show the Rviz visualization 	-->
+	<group if="$(arg rviz)">
+		<node pkg="rviz" type="rviz" name="rviz" args="-d $(find simulation)/data/viewer/viewer.rviz"/>
+
+	</group>
+	<!-- Run the Dashboard Application -->
+	<group if="$(arg dashboard)">
+		<node pkg="simulation" type="dashboard_node" name="dashboard_simulation" output="screen"/>
+	</group>
+</launch>
