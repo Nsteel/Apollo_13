@@ -1,3 +1,0 @@
-driven distance during exploration(m): 15.62719589599997
-time elapsed during exploration(s): 46.51725164
-in comparison to god map (L2Norm): 28669.40398752649
