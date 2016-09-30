@@ -23,7 +23,7 @@
 		<!-- Bring up lane detector -->
 		<node pkg="lane_detector" type="lane_detector" name="lane_detector" output="screen">
 			<remap from="camera_info" to="/camera/rgb/camera_info"/>
-			<remap from="kinect_mono_throttled" to="/camera/rgb/image_rect_mono"/>
+			<remap from="image" to="/camera/rgb/image_rect_mono"/>
 		</node>
 		<!-- Bring up the Kinect -->
 		<include file="$(find apollo_13)/launch/freenect_lane_detection.launch" />
@@ -33,10 +33,10 @@
 		<!-- Bring up lane detector -->
 		<node pkg="lane_detector" type="lane_detector" name="lane_detector" output="screen">
 			<remap from="camera_info" to="/kinect2/qhd/camera_info"/>
+			<remap from="image" to="/kinect2/qhd/image_color_rect"/>
 		</node>
 			<!-- Bring up the Kinect -->
 		<include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch" />
-		<node name="kinect_throttler" type="throttle" pkg="topic_tools" args="messages /kinect2/qhd/image_color_rect 30 /kinect_mono_throttled" />
 	</group>
 
 </launch>
